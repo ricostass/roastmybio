@@ -1,0 +1,16 @@
+.mark {
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  transition: color 0.5s;
+}
+
+.mark:hover {
+  color: var(--ink);
+}
+
+.dot {
+  color: var(--ac);
+  transition: color 0.5s;
+}

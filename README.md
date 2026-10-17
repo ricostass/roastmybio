@@ -1,1 +1,87 @@
-# roastmybio
+# roastmybio — ProfileCheck
+
+ProfileCheck reviews a dating profile from uploaded screenshots. The same
+analysis is delivered in one of two modes:
+
+- **Serious**: a score out of 10, sub-scores, top fixes with sources, photo order and prompt rewrites.
+- **Roast**: a comedy voice note at one of two heat levels (Go easy / No chill · 18+), plus shareable roast cards.
+
+Built with Next.js 16 (App Router) and React 19 from the ProfileCheck design handoff.
+
+## Run it
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+npm test           # unit tests (vitest)
+npm run lint
+npm run typecheck
+npm run build
+```
+
+Demo results you can open without uploading anything:
+
+- `/result/demo-serious`: free teaser, then unlock to the full serious review
+- `/result/demo-roast`: roast result, No chill
+- `/result/demo-roast-easy`: roast result, Go easy
+- `/s/demo-roast`: public share page, with the card as its `og:image`
+- `/cards`: every roast card direction side by side (design review)
+
+## Routes
+
+| Route | What it is |
+| --- | --- |
+| `/` | Landing page. The Serious/Roast toggle re-themes the whole page. Contains the upload form. `?mode=roast` opens in roast mode. |
+| `/result/[id]` | The result. Serious analyses show the teaser/paywall, then the full review. Roast analyses show the roast; `?view=serious` shows the serious review of the same analysis. |
+| `/s/[id]` | Public share page for a roast card. |
+| `/cards` | Card gallery: all four directions, both heat levels, feed formats and the video frame. |
+| `POST /api/analyze` | Multipart upload: `screenshots` (1–9 PNG/JPG, ≤10 MB each), `mode`, `looking`, `app`, `heat`, `voice`, `adult`. Returns `{ id }`. |
+| `GET /api/card/[id]` | Card PNG. Query: `kind=verdict\|line`, `line`, `format=9:16\|4:5\|1:1`, `t=verdict\|poster\|voice\|receipt`. |
+| `POST /api/roast/[id]/soften` | "Too much? Go easy on me": re-runs the roast at the lower heat and returns the new `{ id }`. |
+
+## Roast cards
+
+Card artwork is authored at export size (1080×1920, 1080×1350, 1080×1080). Each
+card template is a React component that renders the shared `RoastCard` model
+(`lib/types.ts`). The same component renders in two places:
+
+- **In the browser** for previews (`components/cards/CardPreview.tsx`, `/cards`)
+- **On the server as PNG** through `next/og` (Satori) in `/api/card/[id]`
+
+Because of that, card markup follows Satori's rules. See the header of
+`components/cards/kit.tsx`: it uses flex only, no fragments, no `calc()`, and
+mixed-colour text is split into word boxes. Generated copy varies in length, so
+text is sized to fit using the bundled fonts' advance widths
+(`components/cards/fit.ts`). Static font files for Satori live in `assets/fonts/`.
+
+The final card direction hasn't been chosen, so the layout is swappable:
+
+| Template | Ref | Formats |
+| --- | --- | --- |
+| `verdict`: The Verdict (default) | 1a, 1e, 1f | 9:16, 4:5, 1:1 |
+| `poster`: Hot Take Poster | 1b | 9:16 |
+| `voice`: The Voice Note | 1c | 9:16 |
+| `receipt`: The Receipt | 1d | 9:16 |
+
+Set the default with `NEXT_PUBLIC_CARD_TEMPLATE`, or override it per image with
+`?t=`. Directions that only have a 9:16 design fall back to The Verdict for 4:5
+and 1:1.
+
+## Configuration
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Absolute base for share-page metadata (`og:image`). |
+| `NEXT_PUBLIC_CARD_TEMPLATE` | `verdict` | Which roast card direction the share flow uses. |
+
+## Not built yet
+
+These parts are stubbed so the whole flow can be exercised end to end:
+
+- **Analysis**: `analyzeProfile()` in `lib/analyze.ts` returns the handoff's sample result. The model-backed review plugs in there. Screenshots are validated and then discarded; nothing is stored.
+- **Storage**: results are kept in memory (`lib/store.ts`). They're lost on restart and aren't shared across server instances.
+- **Checkout**: the unlock buttons reveal the review in place. Quick check shows only the biggest fix. Unlock state isn't persisted.
+- **Voice note audio**: no audio yet. The player runs a clock, so the waveform and "Now roasting" still advance. Set `roast.voice.audioUrl` to play real audio; sharing then attaches it too.
+- **Video**: the 1f frame is drawn, but MP4 rendering isn't built. The "+ video" share option stays hidden until it is.
+- **Photo order tiles**: these show placeholders. The real tiles would be the user's screenshots, which aren't retained.
+- **Placeholders from the design**: `[PRICE]`, `[PRIVACY PROMISE]`, source fields, and the Privacy / Terms / Sources pages.

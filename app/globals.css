@@ -1,0 +1,113 @@
+/* Design tokens. `.theme` switches the whole subtree between the Serious and
+   Roast palettes via data-mode; colour changes animate (the landing flip). */
+
+:root {
+  --display: var(--font-display), 'Bricolage Grotesque', sans-serif;
+  --body: var(--font-body), 'Instrument Sans', system-ui, sans-serif;
+  --mono: var(--font-mono), 'JetBrains Mono', monospace;
+  --ink-serious: #12141a;
+  --ground-serious: #f3f4f7;
+  --accent-serious: #2346d8;
+  --accent-on-ink: #8ea3f2;
+  --ink-roast: #f6f1ea;
+  --ground-roast: #141210;
+  --accent-roast: #ff5a1f;
+}
+
+.theme[data-mode='serious'] {
+  --bg: #f3f4f7;
+  --sf: #ffffff;
+  --sf2: #e9ebf1;
+  --track: #e1e4ec;
+  --ink: #12141a;
+  --mu: #5b6070;
+  --ac: #2346d8;
+  --acink: #ffffff;
+  --bd: rgba(18, 20, 26, 0.12);
+  --hair: rgba(18, 20, 26, 0.1);
+  --chip-bd: rgba(18, 20, 26, 0.25);
+  --drop-bd: rgba(18, 20, 26, 0.2);
+  --rest: rgba(18, 20, 26, 0.22);
+  --shadow: 0 20px 60px rgba(18, 20, 26, 0.08);
+}
+
+.theme[data-mode='roast'] {
+  --bg: #141210;
+  --sf: #1f1b18;
+  --sf2: #2a2520;
+  --track: #2a2520;
+  --ink: #f6f1ea;
+  --mu: #b8afa3;
+  --ac: #ff5a1f;
+  --acink: #141210;
+  --bd: rgba(246, 241, 234, 0.14);
+  --hair: rgba(246, 241, 234, 0.12);
+  --chip-bd: rgba(246, 241, 234, 0.3);
+  --drop-bd: rgba(246, 241, 234, 0.14);
+  --rest: rgba(246, 241, 234, 0.25);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.theme {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  transition: background-color 0.5s, color 0.5s;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--body);
+  background: var(--ground-serious);
+  color: var(--ink-serious);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--ac);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ac, #2346d8);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
