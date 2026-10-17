@@ -1,0 +1,37 @@
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--hair);
+}
+
+.cta {
+  min-height: 52px;
+  border-radius: 999px;
+  background: var(--ac);
+  color: var(--acink);
+  font: 600 16px var(--body);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cta:hover {
+  color: var(--acink);
+}
+
+.fine {
+  margin: 0;
+  text-align: center;
+  font: 400 13px var(--body);
+  color: var(--mu);
+}
