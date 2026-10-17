@@ -4,8 +4,8 @@ import { sampleAnalysis } from './analyze';
 // In-memory stand-in for a results database. Results live only as long as the
 // server process; swap for a real store before running more than one instance.
 
-const globalStore = globalThis as unknown as { __profilecheckResults?: Map<string, Analysis> };
-const results = (globalStore.__profilecheckResults ??= new Map());
+const globalStore = globalThis as unknown as { __roastmybioResults?: Map<string, Analysis> };
+const results = (globalStore.__roastmybioResults ??= new Map());
 
 /** Fixed sample results, always available (used by the card gallery and for demos). */
 export const DEMO_IDS = {

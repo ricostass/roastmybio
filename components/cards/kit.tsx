@@ -1,3 +1,4 @@
+import { BRAND } from '@/lib/brand';
 import type { CSSProperties, ReactNode } from 'react';
 import type { Heat } from '@/lib/types';
 import { fitLines, fitWrapped, wordGap, type FaceKey } from './fit';
@@ -70,7 +71,7 @@ export function Wordmark({ size, color, dot = C.accent, fonts, style }: {
 }) {
   return (
     <div style={{ display: 'flex', ...type(fonts.display, 800, size), letterSpacing: ls(-0.02, size), color, ...style }}>
-      <span>ProfileCheck</span>
+      <span>{BRAND}</span>
       <span style={{ color: dot }}>.</span>
     </div>
   );

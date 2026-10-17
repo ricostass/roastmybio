@@ -1,3 +1,4 @@
+import { BRAND_HOST } from '@/lib/brand';
 import { FORMAT_SIZE, splitLastSentence } from '@/lib/cards';
 import { score } from '@/lib/format';
 import type { RoastCard } from '@/lib/types';
@@ -66,7 +67,7 @@ function Strip({ fonts, bg, fg }: { fonts: CardFonts; bg: string; fg: string }) 
         textTransform: 'uppercase',
       }}
     >
-      profilecheck.app · An AI roasted my dating profile
+      {BRAND_HOST} · An AI roasted my dating profile
     </div>
   );
 }

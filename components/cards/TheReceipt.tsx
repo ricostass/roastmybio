@@ -1,3 +1,4 @@
+import { BRAND_HOST } from '@/lib/brand';
 import { FORMAT_SIZE } from '@/lib/cards';
 import { score } from '@/lib/format';
 import type { RoastCard } from '@/lib/types';
@@ -61,7 +62,7 @@ export function TheReceipt({ card, fonts }: { card: RoastCard; fonts: CardFonts 
           color: easy ? tint('ink', 0.6) : tint('cream', 0.7),
         }}
       >
-        <span>profilecheck.app</span>
+        <span>{BRAND_HOST}</span>
         <span>an AI roasted my dating profile</span>
       </div>
 
@@ -146,7 +147,7 @@ export function TheReceipt({ card, fonts }: { card: RoastCard; fonts: CardFonts 
               color: tint('ink', 0.65),
             }}
           >
-            <div style={{ display: 'flex' }}>GET YOURS AT PROFILECHECK.APP</div>
+            <div style={{ display: 'flex' }}>GET YOURS AT {BRAND_HOST.toUpperCase()}</div>
             <div style={{ display: 'flex' }}>NO REFUNDS ON FEELINGS</div>
           </div>
         </div>

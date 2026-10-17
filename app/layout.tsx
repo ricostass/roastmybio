@@ -8,7 +8,7 @@ const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
-  title: 'ProfileCheck — your dating profile, scored or roasted',
+  title: 'roastmybio — your dating profile, roasted (or scored)',
   description:
     'Upload your dating profile screenshots. Get a sourced score with the fixes that matter, or a roast that ends with the real fixes.',
 };

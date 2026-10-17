@@ -16,7 +16,7 @@ export async function generateMetadata(props: PageProps<'/s/[id]'>): Promise<Met
   const title = `${roast.verdict.setup} ${roast.verdict.punchline}`;
   const image = cardImageUrl(id, { kind: 'verdict', format: '1:1' });
   return {
-    title: `${title} — ProfileCheck`,
+    title: `${title} — roastmybio`,
     description: 'An AI roasted my dating profile.',
     openGraph: { title, description: 'An AI roasted my dating profile.', images: [{ url: image, width: 1080, height: 1080 }] },
     twitter: { card: 'summary_large_image', title, images: [image] },
