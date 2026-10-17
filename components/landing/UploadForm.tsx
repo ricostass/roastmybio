@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, type DragEvent } from 'react';
+import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { DATING_APPS, LOOKING_OPTIONS, type DatingApp, type Heat, type Looking, type Mode } from '@/lib/types';
 import { ACCEPTED_TYPES, MAX_SCREENSHOTS, validateScreenshots } from '@/lib/upload';
 import s from './landing.module.css';
@@ -31,9 +31,37 @@ function Chips<T extends string>({ legend, options, value, onChange }: {
   );
 }
 
+interface Picked {
+  file: File;
+  /** Object URL for the preview thumbnail. */
+  url: string;
+}
+
+const sameFile = (a: File, b: File) => a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
+
+function Thumbnails({ picked, onRemove }: { picked: Picked[]; onRemove: (index: number) => void }) {
+  if (!picked.length) return null;
+  return (
+    <ol className={s.thumbs} aria-label="Your screenshots">
+      {picked.map((p, i) => (
+        <li key={p.url} className={s.thumb}>
+          {/* Local object URL, so next/image has nothing to optimise. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={p.url} alt={`Screenshot ${i + 1}: ${p.file.name}`} />
+          <span className={s.thumbIndex}>{i + 1}</span>
+          <button type="button" className={s.thumbRemove} onClick={() => onRemove(i)} aria-label={`Remove screenshot ${i + 1}`}>
+            ×
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export function UploadForm({ mode }: { mode: Mode }) {
   const router = useRouter();
-  const [files, setFiles] = useState<File[]>([]);
+  const [picked, setPicked] = useState<Picked[]>([]);
+  const files = picked.map((p) => p.file);
   const [dragging, setDragging] = useState(false);
   const [looking, setLooking] = useState<Looking>('A relationship');
   const [app, setApp] = useState<DatingApp>('Hinge');
@@ -45,11 +73,31 @@ export function UploadForm({ mode }: { mode: Mode }) {
   const roast = mode === 'roast';
   const needsAdult = roast && heat === 'nochill';
 
+  // Revoke preview URLs once they're no longer shown.
+  const urls = useRef<string[]>([]);
+  useEffect(() => {
+    const live = new Set(picked.map((p) => p.url));
+    urls.current.filter((u) => !live.has(u)).forEach((u) => URL.revokeObjectURL(u));
+    urls.current = [...live];
+  }, [picked]);
+  useEffect(() => () => urls.current.forEach((u) => URL.revokeObjectURL(u)), []);
+
+  function update(next: Picked[]) {
+    setPicked(next);
+    setError(next.length ? validateScreenshots(next.map((p) => p.file)) : null);
+  }
+
+  /** New screenshots are added after the ones already picked, in profile order. */
   function pick(list: FileList | null) {
-    if (!list) return;
-    const next = Array.from(list);
-    setFiles(next);
-    setError(validateScreenshots(next));
+    if (!list?.length) return;
+    const added = Array.from(list)
+      .filter((f) => !picked.some((p) => sameFile(p.file, f)))
+      .map((file) => ({ file, url: URL.createObjectURL(file) }));
+    update([...picked, ...added]);
+  }
+
+  function remove(index: number) {
+    update(picked.filter((_, i) => i !== index));
   }
 
   function onDrop(e: DragEvent) {
@@ -109,7 +157,11 @@ export function UploadForm({ mode }: { mode: Mode }) {
             multiple
             accept={ACCEPTED_TYPES.join(',')}
             className="sr-only"
-            onChange={(e) => pick(e.target.files)}
+            onChange={(e) => {
+              pick(e.target.files);
+              // Lets the same file be picked again after it was removed.
+              e.target.value = '';
+            }}
           />
           <span className={s.plus} aria-hidden="true">
             +
@@ -119,7 +171,7 @@ export function UploadForm({ mode }: { mode: Mode }) {
               <span className={s.dropTitle}>
                 {files.length} screenshot{files.length === 1 ? '' : 's'} ready
               </span>
-              <span className={s.dropSub}>Tap to change</span>
+              <span className={s.dropSub}>Tap or drop to add more · in profile order</span>
             </>
           ) : (
             <>
@@ -128,6 +180,7 @@ export function UploadForm({ mode }: { mode: Mode }) {
             </>
           )}
         </label>
+        <Thumbnails picked={picked} onRemove={remove} />
         <div className={s.privacy}>[PRIVACY PROMISE — e.g. screenshots are deleted after analysis; never used for training]</div>
       </div>
 
@@ -177,7 +230,7 @@ export function UploadForm({ mode }: { mode: Mode }) {
           </div>
         )}
         <button type="submit" className={s.submit} disabled={submitting}>
-          {submitting ? 'Checking…' : roast ? 'Roast my profile' : 'Score my profile'}
+          {submitting ? 'Reading your screenshots…' : roast ? 'Roast my profile' : 'Score my profile'}
         </button>
         <div className={s.fine}>You&apos;ll see your score and verdict free. Unlock the full review after.</div>
       </div>
