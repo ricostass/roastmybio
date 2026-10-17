@@ -39,3 +39,13 @@ export function ScoreBlock({ review }: { review: SeriousReview }) {
     </div>
   );
 }
+
+/** Shown when no model is configured and the result is the built-in sample. */
+export function SampleNotice() {
+  return (
+    <div className={s.notice} role="note">
+      Sample result. Profile analysis isn&apos;t configured (set ANTHROPIC_API_KEY), so these numbers aren&apos;t from your
+      screenshots.
+    </div>
+  );
+}
