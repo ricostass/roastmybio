@@ -96,15 +96,11 @@ describe('toRoast', () => {
     expect(roast.voice.frameSec).toBe(6);
   });
 
-  it('keeps the spoken script as one rant, ending on the fixes only going easy', () => {
-    const script = { roast: 'Four photos. ONE angle. Who hurt you?', fixes: 'Show another angle.' };
-    expect(toRoast('nochill', { ...rawRoast, script }).voice.script).toEqual({ roast: script.roast });
-    expect(toRoast('easy', { ...rawRoast, script }).voice.script).toEqual(script);
-    // Going easy without written fixes, the lines' fixes are read out.
-    expect(toRoast('easy', { ...rawRoast, script: { roast: script.roast } }).voice.script?.fixes).toBe(
-      'Show other angles. Give an opinion.',
-    );
-    expect(toRoast('nochill', { ...rawRoast, script: { roast: ' ' } }).voice.script).toBeUndefined();
+  it('keeps the spoken script as one rant, without fixes', () => {
+    const script = ' Four photos. ONE angle. Who hurt you? ';
+    expect(toRoast('nochill', { ...rawRoast, script }).voice.script).toBe(script.trim());
+    expect(toRoast('genz', { ...rawRoast, script }).voice.script).toBe(script.trim());
+    expect(toRoast('nochill', { ...rawRoast, script: ' ' }).voice.script).toBeUndefined();
   });
 
   it('feeds the share cards', () => {

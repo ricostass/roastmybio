@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { analyzeProfile, softenRoast } from './analyze';
+import { analyzeProfile, genZRoast } from './analyze';
 import type { ReviewResult } from './review';
 import { overallScore } from './scoring';
 
@@ -30,7 +30,7 @@ const reviewScreenshots = vi.fn(async (images: string[], input: unknown) => {
   void input;
   return result;
 });
-const roastProfile = vi.fn(async () => ({ ...result.roast!, verdict: { setup: 'Gentler.', punchline: 'Still true.' } }));
+const roastProfile = vi.fn(async () => ({ ...result.roast!, verdict: { setup: 'not the fish', punchline: 'genuinely cooked' } }));
 
 vi.mock('./review', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./review')>()),
@@ -65,15 +65,15 @@ describe('analyzeProfile', () => {
     expect(Math.max(meta.width!, meta.height!)).toBe(1568);
   });
 
-  it('keeps the serious review when the roast is softened', async () => {
+  it('keeps the serious review when the Gen Z roaster re-runs the roast', async () => {
     const original = await analyzeProfile(
       { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'nochill', voice: true },
       [await png('a.png')],
     );
-    const softer = await softenRoast(original);
-    expect(softer.id).not.toBe(original.id);
-    expect(softer.serious).toEqual(original.serious);
-    expect(softer.roast?.heat).toBe('easy');
-    expect(softer.roast?.verdict.setup).toBe('Gentler.');
+    const genz = await genZRoast(original);
+    expect(genz.id).not.toBe(original.id);
+    expect(genz.serious).toEqual(original.serious);
+    expect(genz.roast?.heat).toBe('genz');
+    expect(genz.roast?.verdict.setup).toBe('not the fish');
   });
 });

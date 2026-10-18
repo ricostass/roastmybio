@@ -74,9 +74,9 @@ const SAMPLE_LINES = [
 ];
 
 export const SAMPLE_ROAST: Record<Heat, Roast> = {
-  easy: {
-    heat: 'easy',
-    verdict: { setup: 'Great profile.', punchline: 'In 2019.' },
+  genz: {
+    heat: 'genz',
+    verdict: { setup: 'great profile', punchline: 'in 2019' },
     cringe: 6.2,
     lines: SAMPLE_LINES,
     receipt: [

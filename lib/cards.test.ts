@@ -5,7 +5,7 @@ import { buildCard, cardImageUrl, currentCaptionWord, splitLastSentence } from '
 import { meterBlocks } from './format';
 
 const roast = sampleAnalysis('t', { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'nochill', voice: true });
-const serious = sampleAnalysis('s', { mode: 'serious', app: 'Hinge', looking: 'A relationship', heat: 'easy', voice: false });
+const serious = sampleAnalysis('s', { mode: 'serious', app: 'Hinge', looking: 'A relationship', heat: 'genz', voice: false });
 
 describe('buildCard', () => {
   it('builds a verdict card from the roast', () => {

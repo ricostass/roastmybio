@@ -57,7 +57,7 @@ export function type(family: string, weight: number, size: number, lineHeight?: 
 
 /** Ground/ink pair for the two heat levels (cream ↔ black). */
 export function heatColors(heat: Heat) {
-  return heat === 'easy'
+  return heat === 'genz'
     ? { ground: C.cream, fg: C.ink, muted: (a: number) => tint('ink', a) }
     : { ground: C.ink, fg: C.cream, muted: (a: number) => tint('cream', a) };
 }
@@ -77,8 +77,8 @@ export function Wordmark({ size, color, dot = C.accent, fonts, style }: {
   );
 }
 
-/** "GO EASY" outline pill. */
-export function EasyBadge({ fonts, size = 28 }: { fonts: CardFonts; size?: number }) {
+/** "GEN Z" outline pill. */
+export function GenZBadge({ fonts, size = 28 }: { fonts: CardFonts; size?: number }) {
   return (
     <div
       style={{
@@ -91,7 +91,7 @@ export function EasyBadge({ fonts, size = 28 }: { fonts: CardFonts; size?: numbe
         color: C.ink,
       }}
     >
-      GO EASY
+      GEN Z
     </div>
   );
 }
@@ -147,7 +147,7 @@ export function NoChillBadge({ fonts, size = 28, lower = '18+ · UNFILTERED', st
 }
 
 export function HeatBadge({ heat, fonts }: { heat: Heat; fonts: CardFonts }) {
-  return heat === 'easy' ? <EasyBadge fonts={fonts} /> : <NoChillBadge fonts={fonts} />;
+  return heat === 'genz' ? <GenZBadge fonts={fonts} /> : <NoChillBadge fonts={fonts} />;
 }
 
 const FACE_WEIGHT: Record<FaceKey, number> = { display800: 800, display600: 600, body700: 700, mono: 700 };
@@ -267,8 +267,8 @@ export function CtaPill({ heat, fonts }: { heat: Heat; fonts: CardFonts }) {
     <div
       style={{
         display: 'flex',
-        background: heat === 'easy' ? C.ink : C.accent,
-        color: heat === 'easy' ? C.cream : C.ink,
+        background: heat === 'genz' ? C.ink : C.accent,
+        color: heat === 'genz' ? C.cream : C.ink,
         borderRadius: 999,
         padding: '26px 44px',
         ...type(fonts.body, 700, 32),

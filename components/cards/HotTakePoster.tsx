@@ -4,17 +4,17 @@ import { score } from '@/lib/format';
 import type { RoastCard } from '@/lib/types';
 import { C, Frame, Middle, Verdict, Wordmark, Words, ls, tint, type, type CardFonts } from './kit';
 
-// 1b "Hot Take Poster" — all-caps, stickers, a thermometer. Go easy is cream
+// 1b "Hot Take Poster" — all-caps, stickers, a thermometer. Gen Z is cream
 // with orange ink; No chill is a full orange ground. Story format only.
 
 function palette(card: RoastCard) {
-  return card.heat === 'easy'
+  return card.heat === 'genz'
     ? { ground: C.cream, punch: C.accent, dot: C.accent, fill: C.accent, label: tint('ink', 0.6), sticker: { bg: C.ink, fg: C.cream } }
     : { ground: C.accent, punch: C.cream, dot: C.cream, fill: C.ink, label: tint('ink', 0.7), sticker: { bg: C.cream, fg: C.ink } };
 }
 
 function Badge({ card, fonts }: { card: RoastCard; fonts: CardFonts }) {
-  if (card.heat === 'easy') {
+  if (card.heat === 'genz') {
     return (
       <div
         style={{
@@ -28,7 +28,7 @@ function Badge({ card, fonts }: { card: RoastCard; fonts: CardFonts }) {
           letterSpacing: ls(0.06, 34),
         }}
       >
-        GO EASY
+        GEN Z
       </div>
     );
   }
@@ -161,8 +161,8 @@ export function HotTakePoster({ card, fonts }: { card: RoastCard; fonts: CardFon
             marginTop: 90,
             transform: 'rotate(-3deg)',
             alignSelf: 'flex-start',
-            background: card.heat === 'easy' ? C.ink : C.cream,
-            color: card.heat === 'easy' ? C.cream : C.ink,
+            background: card.heat === 'genz' ? C.ink : C.cream,
+            color: card.heat === 'genz' ? C.cream : C.ink,
             padding: '16px 30px',
             ...type(fonts.mono, 700, 34),
             letterSpacing: ls(0.1, 34),
@@ -190,7 +190,7 @@ export function HotTakePoster({ card, fonts }: { card: RoastCard; fonts: CardFon
           </div>
           <div style={{ display: 'flex', marginTop: 14, ...type(fonts.body, 500, 38, 1.25) }}>{line.wrong}</div>
         </div>
-        {card.heat === 'easy' ? <Strip fonts={fonts} bg={C.accent} fg={C.ink} /> : <Strip fonts={fonts} bg={C.cream} fg={C.ink} />}
+        {card.heat === 'genz' ? <Strip fonts={fonts} bg={C.accent} fg={C.ink} /> : <Strip fonts={fonts} bg={C.cream} fg={C.ink} />}
       </Frame>
     );
   }

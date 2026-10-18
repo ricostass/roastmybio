@@ -14,10 +14,10 @@ import s from './cards.module.css';
 export const metadata: Metadata = { title: 'Roast cards — roastmybio', robots: { index: false } };
 
 const VARIANTS: { id: string; label: string; req: CardRequest }[] = [
-  { id: DEMO_IDS.roastEasy, label: 'Verdict · Go easy', req: { kind: 'verdict', format: '9:16' } },
+  { id: DEMO_IDS.roastGenZ, label: 'Verdict · Gen Z', req: { kind: 'verdict', format: '9:16' } },
   { id: DEMO_IDS.roastNoChill, label: 'Verdict · No chill', req: { kind: 'verdict', format: '9:16' } },
   { id: DEMO_IDS.roastNoChill, label: 'Line · No chill', req: { kind: 'line', line: 0, format: '9:16' } },
-  { id: DEMO_IDS.roastEasy, label: 'Line · Go easy', req: { kind: 'line', line: 1, format: '9:16' } },
+  { id: DEMO_IDS.roastGenZ, label: 'Line · Gen Z', req: { kind: 'line', line: 1, format: '9:16' } },
 ];
 
 function card(id: string, req: CardRequest) {
@@ -69,8 +69,8 @@ export default function CardsPage() {
         <div className={s.row}>
           <Item id={DEMO_IDS.roastNoChill} label="4:5 · No chill" req={{ kind: 'verdict', format: '4:5' }} width={300} />
           <Item id={DEMO_IDS.roastNoChill} label="1:1 · No chill" req={{ kind: 'verdict', format: '1:1' }} width={300} />
-          <Item id={DEMO_IDS.roastEasy} label="4:5 · Go easy" req={{ kind: 'verdict', format: '4:5' }} width={300} />
-          <Item id={DEMO_IDS.roastEasy} label="1:1 · Line" req={{ kind: 'line', line: 2, format: '1:1' }} width={300} />
+          <Item id={DEMO_IDS.roastGenZ} label="4:5 · Gen Z" req={{ kind: 'verdict', format: '4:5' }} width={300} />
+          <Item id={DEMO_IDS.roastGenZ} label="1:1 · Line" req={{ kind: 'line', line: 2, format: '1:1' }} width={300} />
         </div>
       </section>
 

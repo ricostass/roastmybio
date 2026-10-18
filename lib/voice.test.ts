@@ -18,24 +18,15 @@ const raw: RawRoast = {
     { target: 'BIO', quote: null, joke: 'No bio.', wrong: 'Write one.' },
   ],
   receipt: [{ label: 'BIO · missing', cringe: 2 }],
-  script: {
-    roast: 'Three photos, zero sentences. A fish, held up like a trophy. And then... nothing to say?',
-    fixes: 'Show people. Write a bio.',
-  },
+  script: "ok so three photos and zero sentences, not the fish, i'm done—",
 };
 
-function analysis(heat: Heat = 'easy'): Analysis {
+function analysis(heat: Heat = 'genz'): Analysis {
   return { ...sampleAnalysis('abc123', { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat, voice: true }), roast: toRoast(heat, raw) };
 }
 
-// Each part comes back as a clip whose length depends on what was said.
-const rant = raw.script!.roast;
-const fixes = raw.script!.fixes!;
-const FRAMES: Record<string, number> = { [rant]: 150, [fixes]: 75 };
-const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
-  const body = JSON.parse(String(init.body)) as { input: string };
-  return new Response(clip(FRAMES[body.input]), { headers: { 'Content-Type': 'audio/mpeg' } });
-});
+const rant = raw.script!;
+const fetchMock = vi.fn(async () => new Response(clip(150), { headers: { 'Content-Type': 'audio/mpeg' } }));
 
 beforeEach(() => {
   vi.stubEnv('OPENAI_API_KEY', 'test-key');
@@ -48,29 +39,24 @@ afterEach(() => {
 });
 
 describe('voiceOver', () => {
-  it('reads each part of the script aloud in the heat’s voice', async () => {
-    await voiceOver(analysis());
-    const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(String(init.body)));
-    expect(bodies.map((b) => b.input)).toEqual([rant, fixes]);
-    expect(new Set(bodies.map((b) => b.voice))).toEqual(new Set(['coral']));
-    expect(bodies.at(-1).instructions).not.toBe(bodies[0].instructions);
-    expect(fetchMock.mock.calls[0][1].headers).toMatchObject({ Authorization: 'Bearer test-key' });
-  });
-
-  it('reads no fixes with no chill', async () => {
-    const { analysis: voiced } = await voiceOver(analysis('nochill'));
-    const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(String(init.body)));
-    expect(bodies.map((b) => b.input)).toEqual([rant]);
-    expect(new Set(bodies.map((b) => b.voice))).toEqual(new Set(['ash']));
-    expect(voiced.roast!.voice).toMatchObject({ durationSec: 3.6, script: { roast: rant } });
+  it('reads the script aloud in one go, in each roaster’s own voice', async () => {
+    await voiceOver(analysis('genz'));
+    await voiceOver(analysis('nochill'));
+    const bodies = fetchMock.mock.calls.map((call) => JSON.parse(String((call as unknown as [string, RequestInit])[1].body)));
+    expect(bodies.map((b) => [b.input, b.voice])).toEqual([
+      [rant, 'nova'],
+      [rant, 'ash'],
+    ]);
+    expect(bodies[0].instructions).not.toBe(bodies[1].instructions);
+    expect((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].headers).toMatchObject({ Authorization: 'Bearer test-key' });
   });
 
   it('times the note from the audio and serves it from the site', async () => {
     const { analysis: voiced, voiceNote } = await voiceOver(analysis());
     const voice = voiced.roast!.voice;
     expect(voice.audioUrl).toBe('/api/voice/abc123');
-    expect(voice.durationSec).toBe(5.4);
-    expect(voiceNote).toHaveLength(225 * 96);
+    expect(voice).toMatchObject({ durationSec: 3.6, script: rant });
+    expect(voiceNote).toHaveLength(150 * 96);
   });
 
   it('keeps the roast on its estimate when text-to-speech fails', async () => {

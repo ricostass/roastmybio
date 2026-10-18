@@ -6,7 +6,7 @@ import {
   C,
   Column,
   CtaPill,
-  EasyBadge,
+  GenZBadge,
   Frame,
   HeatBadge,
   Middle,
@@ -191,7 +191,7 @@ function Portrait({ card, fonts }: { card: RoastCard; fonts: CardFonts }) {
     <Frame width={width} height={height} style={{ background: ground, color: fg, padding: '80px 84px', fontFamily: fonts.body }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Wordmark size={40} fonts={fonts} />
-        {card.heat === 'easy' ? <EasyBadge fonts={fonts} size={26} /> : <NoChillBadge fonts={fonts} size={26} lower="18+" />}
+        {card.heat === 'genz' ? <GenZBadge fonts={fonts} size={26} /> : <NoChillBadge fonts={fonts} size={26} lower="18+" />}
       </div>
       {card.kind === 'verdict' && card.verdict ? (
         <Column>
@@ -233,7 +233,7 @@ function Square({ card, fonts }: { card: RoastCard; fonts: CardFonts }) {
     <Frame width={width} height={height} style={{ background: ground, color: fg, padding: '72px 80px', fontFamily: fonts.body }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Wordmark size={40} fonts={fonts} />
-        {card.heat === 'easy' ? <EasyBadge fonts={fonts} size={26} /> : <NoChillBadge fonts={fonts} size={26} stacked={false} />}
+        {card.heat === 'genz' ? <GenZBadge fonts={fonts} size={26} /> : <NoChillBadge fonts={fonts} size={26} stacked={false} />}
       </div>
       {card.kind === 'verdict' && card.verdict ? (
         <Middle>
@@ -286,7 +286,7 @@ export function VerdictVideoFrame({ card, fonts, caption }: {
         </div>
       </div>
       <div style={{ display: 'flex', marginTop: 120 }}>
-        <Label fonts={fonts} color={muted(0.6)}>{card.heat === 'easy' ? 'VERDICT · GO EASY' : 'VERDICT · NO CHILL · 18+'}</Label>
+        <Label fonts={fonts} color={muted(0.6)}>{card.heat === 'genz' ? 'VERDICT · GEN Z' : 'VERDICT · NO CHILL · 18+'}</Label>
       </div>
       {card.verdict && (
         <div style={{ display: 'flex', marginTop: 40 }}>
@@ -294,7 +294,7 @@ export function VerdictVideoFrame({ card, fonts, caption }: {
         </div>
       )}
       <div style={{ display: 'flex', flexDirection: 'column', marginTop: 60 }}>
-        <Waveform heights={waveform(48, 4)} played={progress} height={120} gap={6} radius={6} rest={muted(card.heat === 'easy' ? 0.22 : 0.28)} />
+        <Waveform heights={waveform(48, 4)} played={progress} height={120} gap={6} radius={6} rest={muted(card.heat === 'genz' ? 0.22 : 0.28)} />
       </div>
       <div style={{ flex: 1 }} />
       <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: 12, columnGap: 10, marginBottom: 60 }}>

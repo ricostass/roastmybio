@@ -16,17 +16,17 @@ const voiceNotes = (globalStore.__roastmybioVoiceNotes ??= new Map());
 export const DEMO_IDS = {
   serious: 'demo-serious',
   roastNoChill: 'demo-roast',
-  roastEasy: 'demo-roast-easy',
+  roastGenZ: 'demo-roast-genz',
 } as const;
 
 function demo(id: string): Analysis | undefined {
   switch (id) {
     case DEMO_IDS.serious:
-      return sampleAnalysis(id, { mode: 'serious', app: 'Hinge', looking: 'A relationship', heat: 'easy', voice: false });
+      return sampleAnalysis(id, { mode: 'serious', app: 'Hinge', looking: 'A relationship', heat: 'genz', voice: false });
     case DEMO_IDS.roastNoChill:
       return sampleAnalysis(id, { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'nochill', voice: true });
-    case DEMO_IDS.roastEasy:
-      return sampleAnalysis(id, { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'easy', voice: true });
+    case DEMO_IDS.roastGenZ:
+      return sampleAnalysis(id, { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'genz', voice: true });
   }
 }
 

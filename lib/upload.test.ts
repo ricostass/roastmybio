@@ -22,11 +22,11 @@ describe('parseCheckOptions', () => {
   const base = { mode: 'roast', app: 'Hinge', looking: 'A relationship' };
 
   it('parses a valid roast request', () => {
-    expect(parseCheckOptions(form({ ...base, heat: 'easy', voice: 'true' }))).toEqual({
+    expect(parseCheckOptions(form({ ...base, heat: 'genz', voice: 'true' }))).toEqual({
       mode: 'roast',
       app: 'Hinge',
       looking: 'A relationship',
-      heat: 'easy',
+      heat: 'genz',
       voice: true,
       adult: false,
     });
@@ -40,6 +40,6 @@ describe('parseCheckOptions', () => {
   it('rejects unknown values', () => {
     expect(parseCheckOptions(form({ ...base, mode: 'spicy' }))).toBe('Unknown mode.');
     expect(parseCheckOptions(form({ ...base, app: 'Grindr' }))).toBe('Pick which app.');
-    expect(parseCheckOptions(form({ ...base, heat: 'lava' }))).toBe('Unknown heat level.');
+    expect(parseCheckOptions(form({ ...base, heat: 'lava' }))).toBe('Unknown roaster.');
   });
 });

@@ -88,13 +88,8 @@ export interface RawRoast {
   verdict: { setup: string; punchline: string };
   lines: { target: string; quote: string | null; joke: string; wrong: string }[];
   receipt: ReceiptItem[];
-  /** The voice note, its own roast to be read aloud, then (going easy) the real fixes. */
-  script?: { roast: string; fixes?: string };
-}
-
-/** Whether the voice note ends on the real fixes. No chill ends on the roast. */
-export function spokenFixes(heat: Heat) {
-  return heat !== 'nochill';
+  /** The voice note: its own roast, read aloud as one piece. */
+  script?: string;
 }
 
 function wordCount(s: string) {
@@ -111,16 +106,10 @@ export function toRoast(heat: Heat, raw: RawRoast): Roast {
   const receipt = raw.receipt.slice(0, 6).map((r) => ({ label: r.label, cringe: round1(clamp(r.cringe, 0, MAX_ITEM_CRINGE)) }));
   const cringe = clampScore(receipt.reduce((sum, r) => sum + r.cringe, 0));
 
-  // The script is the voice note's own roast, read as one piece; going easy, it
-  // ends on the real fixes. Without one, the note's length follows the lines.
-  const fixes = lines.map((l) => l.wrong).join(' ');
-  const rant = raw.script?.roast.trim();
-  const script = rant
-    ? { roast: rant, ...(spokenFixes(heat) ? { fixes: raw.script?.fixes?.trim() || fixes } : {}) }
-    : undefined;
-  const spoken = script
-    ? [script.roast, script.fixes ?? '']
-    : [...lines.map((l) => l.joke), spokenFixes(heat) ? fixes : ''];
+  // The script is the voice note's own roast, read as one piece. Without one,
+  // the note's length follows the lines.
+  const script = raw.script?.trim() || undefined;
+  const spoken = script ? [script] : lines.map((l) => l.joke);
 
   // Until there's audio to time it from, assume roughly 2.6 spoken words a second.
   const words = spoken.reduce((n, text) => n + wordCount(text), 0);

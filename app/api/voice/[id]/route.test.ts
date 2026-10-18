@@ -5,7 +5,7 @@ import { GET } from './route';
 
 const mp3 = new Uint8Array(Array.from({ length: 1000 }, (_, i) => i % 256));
 saveAnalysis(
-  sampleAnalysis('voiced', { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'easy', voice: true }),
+  sampleAnalysis('voiced', { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'genz', voice: true }),
   mp3,
 );
 
