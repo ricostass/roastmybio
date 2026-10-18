@@ -27,7 +27,9 @@ export function reviewConfigured() {
 
 let client: Anthropic | undefined;
 function anthropic() {
-  return (client ??= new Anthropic());
+  // Keys that aren't scoped to a workspace must name one on every request.
+  const workspace = process.env.ANTHROPIC_WORKSPACE_ID;
+  return (client ??= new Anthropic(workspace ? { defaultHeaders: { 'anthropic-workspace-id': workspace } } : {}));
 }
 
 // ---------- Output schemas ----------

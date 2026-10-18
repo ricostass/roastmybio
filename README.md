@@ -97,6 +97,7 @@ Without `ANTHROPIC_API_KEY`, `npm run dev` falls back to the sample result with 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | — | Required for real analysis. |
+| `ANTHROPIC_WORKSPACE_ID` | — | Only for API keys that aren't scoped to a workspace: the workspace to bill requests to. |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Absolute base for share-page metadata (`og:image`). Its host is also the link printed on roast cards (just "roastmybio" when local). |
 | `NEXT_PUBLIC_CARD_TEMPLATE` | `verdict` | Which roast card direction the share flow uses. |
 
