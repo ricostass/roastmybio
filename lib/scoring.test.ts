@@ -88,16 +88,17 @@ describe('toRoast', () => {
     expect(roast.cringe).toBe(4.6);
   });
 
-  it('times one voice-note segment per line, ending on the real fixes', () => {
+  it('times one voice-note segment per line, ending on the real fixes only going easy', () => {
     expect(roast.lines.map((l) => l.target)).toEqual(['PHOTO 4', 'PROMPT 2']);
     expect(roast.lines[0]).not.toHaveProperty('quote');
-    expect(roast.voice.segments.map((s) => s.label)).toEqual(['Photo 4', 'Prompt 2', 'The real fixes']);
+    expect(roast.voice.segments.map((s) => s.label)).toEqual(['Photo 4', 'Prompt 2']);
+    expect(toRoast('easy', rawRoast).voice.segments.map((s) => s.label)).toEqual(['Photo 4', 'Prompt 2', 'The real fixes']);
     expect(roast.voice.segments[0].startSec).toBe(0);
     expect(roast.voice.segments.at(-1)!.startSec).toBeLessThan(roast.voice.durationSec);
   });
 
   it('makes the spoken script its own roast in the voice-note segments', () => {
-    const voiced = toRoast('nochill', {
+    const voiced = toRoast('easy', {
       ...rawRoast,
       script: {
         parts: [
@@ -118,8 +119,8 @@ describe('toRoast', () => {
   });
 
   it('reads the roast’s lines when the script has no parts', () => {
-    const voiced = toRoast('nochill', { ...rawRoast, script: { parts: [], fixes: 'Show another angle.' } });
-    expect(voiced.voice.segments.map((s) => s.text)).toEqual(['Four photos, one angle.', 'We did. Nothing.', 'Show another angle.']);
+    const voiced = toRoast('nochill', { ...rawRoast, script: { parts: [] } });
+    expect(voiced.voice.segments.map((s) => s.text)).toEqual(['Four photos, one angle.', 'We did. Nothing.']);
   });
 
   it('feeds the share cards', () => {

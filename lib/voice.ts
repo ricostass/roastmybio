@@ -1,9 +1,9 @@
 import { joinMp3 } from './mp3';
-import { round1 } from './scoring';
+import { FIXES_LABEL, round1 } from './scoring';
 import type { Analysis, Heat, Roast, VoiceSegment } from './types';
 
 // Turns a roast's spoken script into the voice note. Each part of the script
-// (one per roast line, then the real fixes) is read by OpenAI's text-to-speech
+// (the roast's parts, then the real fixes when going easy) is read by OpenAI's text-to-speech
 // in the heat's voice, and the clips are joined into one MP3. The note's length
 // and the "Now roasting" timings come from the audio itself.
 
@@ -11,7 +11,7 @@ export function voiceConfigured() {
   return Boolean(process.env.OPENAI_API_KEY);
 }
 
-const DELIVERY: Record<Heat, { voice: string; roast: string; fixes: string }> = {
+const DELIVERY: Record<Heat, { voice: string; roast: string; fixes?: string }> = {
   easy: {
     voice: 'coral',
     roast:
@@ -19,11 +19,9 @@ const DELIVERY: Record<Heat, { voice: string; roast: string; fixes: string }> = 
     fixes: 'The funniest friend in the group chat, dropping the bit to help. Warm, friendly and clear, still smiling.',
   },
   nochill: {
-    voice: 'onyx',
+    voice: 'ash',
     roast:
       "NO CHILL: an explosive, foul-mouthed roaster recording a voice memo seconds after opening someone's dating profile, and you are NOT okay. You take this profile as a personal attack. Volatile at all times: pitch shooting up, voice cracking on the peak word, explosive shouts, rapid-fire runs, dead stops. Moments of shrill, hysterical, near-screaming disbelief; shout the pivotal phrase like it's physically escaping you. Laughter that breaks through mid-sentence because you can't believe what you're looking at, then gets swallowed by more outrage. Incredulous scoffs, sharp inhales, a stunned silence before the next hit. Sometimes drop to a creepy calm and say a few words slowly, one at a time, before detonating again. Never flatline, and never scream the whole time: every outburst is triggered by a specific detail, and the calm parts make the next explosion bigger. Don't repeat the same laugh, gasp or scream pattern twice. The words stay intelligible even at full volume.",
-    fixes:
-      "NO CHILL, out of breath after the meltdown and done screaming. Blunt, fast and exasperated, like you're listing what to fix so you never have to see this profile again. No softening, words clear.",
   },
 };
 
@@ -51,9 +49,8 @@ export async function recordVoiceNote(
   segments: VoiceSegment[],
 ): Promise<{ mp3: Uint8Array<ArrayBuffer>; voice: Omit<Roast['voice'], 'audioUrl'> }> {
   const { voice, roast, fixes } = DELIVERY[heat];
-  // The last part is always the real fixes.
   const clips = await Promise.all(
-    segments.map((seg, i) => speak(seg.text ?? '', voice, i === segments.length - 1 ? fixes : roast)),
+    segments.map((seg) => speak(seg.text ?? '', voice, fixes && seg.label === FIXES_LABEL ? fixes : roast)),
   );
   const { mp3, durations } = joinMp3(clips);
   if (durations.some((d) => d === 0)) throw new Error('Text-to-speech returned a clip with no audio.');

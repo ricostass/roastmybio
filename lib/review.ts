@@ -57,14 +57,17 @@ const RoastSchema = z.object({
   receipt: z.array(z.object({ label: z.string(), cringe: z.number() })),
 });
 
-// The voice note: its own roast, written for the ear in parts, then the real fixes.
-const VoicedRoastSchema = RoastSchema.extend({
-  script: z.object({ parts: z.array(z.object({ target: z.string(), text: z.string() })), fixes: z.string() }),
-});
+// The voice note: its own roast, written for the ear in parts. Go easy ends on
+// the real fixes; no chill ends on the roast.
+const ScriptParts = z.array(z.object({ target: z.string(), text: z.string() }));
+const VoicedRoastSchema = {
+  easy: RoastSchema.extend({ script: z.object({ parts: ScriptParts, fixes: z.string() }) }),
+  nochill: RoastSchema.extend({ script: z.object({ parts: ScriptParts }) }),
+};
 
 const SeriousOutput = z.object({ profile: ProfileSchema, review: ReviewSchema });
 const RoastOutput = z.object({ profile: ProfileSchema, review: ReviewSchema, roast: RoastSchema });
-const VoicedRoastOutput = z.object({ profile: ProfileSchema, review: ReviewSchema, roast: VoicedRoastSchema });
+const voicedRoastOutput = (heat: Heat) => z.object({ profile: ProfileSchema, review: ReviewSchema, roast: VoicedRoastSchema[heat] });
 
 // ---------- Prompts ----------
 
@@ -114,11 +117,11 @@ Everything is fair game: the photos, the face they chose to make, the outfit, th
 - Follow their self-description to its most absurd conclusion.
 - Expose the gap between how they think they come across and how they actually come across.
 Every line must be so specific to this profile that it couldn't be pasted into anyone else's roast.
-No slurs, no threats, no invented damaging facts. Everything else is on the table, inside the hard floor below.
+No slurs, no threats, no invented damaging facts. Everything else is on the table. Their looks are allowed too, but they shouldn't be the core of the roast.
 
 LANGUAGE
 Blunt insults and profanity wherever they hit harder. Swearing adds force; it never replaces the punchline.
-Short spoken bursts. Then a long sentence that speeds up and goes off the rails as you lose it. Rhetorical questions, self-interruptions, sudden realizations, callbacks, talking to imaginary people ("Somebody get your mother on the phone").
+Short spoken bursts. Then a long sentence that speeds up and goes off the rails as you lose it. Rhetorical questions, self-interruptions, sudden realizations, callbacks, talking to imaginary people ("Somebody get his mother on the phone").
 Direct everyday English. Slang and memes rare; that's the Gen Z persona's lane.
 
 DELIVERY
@@ -132,7 +135,7 @@ You're recording a voice memo seconds after seeing this profile, and you are NOT
 Never flatline. Never scream the whole time either: every outburst is triggered by a specific detail, and the calm parts exist to make the next explosion bigger. Don't repeat the same laugh, gasp, or scream pattern twice.
 
 LENGTH
-Hard cap: 45 seconds spoken (roughly 110 words at this pace). Shorter is better: if it lands in 30, stop at 30.
+Usually around 45 seconds spoken (roughly 110 words at this pace), but that is a guide, not a cap: a thin profile can be done in 20, a profile with a lot to roast can run a bit longer. The delivery matters more than the length.
 Sharp and punchy: every line either sets up a hit or is one. Cut any sentence that only exists to keep the rant going. No warm-up, no recap. Open on the first jab within the first three seconds.
 
 ENDING
@@ -143,15 +146,27 @@ const HEAT_RULES: Record<Heat, string> = {
   nochill: NO_CHILL,
 };
 
-// How long the note runs, and how the script carries the delivery, per heat.
-const VOICE_LENGTH: Record<Heat, string> = {
-  easy: '90–160 words in total.',
+// How the note ends and how long it runs, per heat.
+const VOICE_ENDING: Record<Heat, string> = {
+  easy: "script.fixes closes the note: the real fixes from each line's wrong, in plain spoken sentences, in the same voice, without a joke landing on any of them. 90–160 words in total.",
   nochill:
-    'script.parts together are the rant: at most 110 words, shorter is better, and the last part lands the ending. script.fixes comes after the rant: at most 40 words, still you, blunt and fed up, no softening. Let punctuation carry the delivery: dashes for self-interruptions, ellipses for dead stops and the slow creepy-calm words, exclamation marks on the outbursts, the shouted peak word in capitals.',
+    'The note is all rant, no fixes: the last part lands the ending. Its length follows the LENGTH guide above: more to roast on the profile, longer note. Let punctuation carry the delivery: dashes for self-interruptions, ellipses for dead stops and the slow creepy-calm words, exclamation marks on the outbursts, the shouted peak word in capitals.',
 };
 
 // The script is read out by a text-to-speech voice in the same heat.
-const voiceRules = (heat: Heat) => `- script: the voice note, a separate roast written to be heard, not a reading of lines. It can pick up a joke from lines, rework one, or go somewhere completely different; whatever hits hardest out loud. script.parts is the note in the order it is said, one part per thing you go after: target is what that part is about ("PHOTO n", "PROMPT n", "BIO", or "PROFILE" for the whole thing), text is what is said, naming out loud what it is about ("your fifth photo", "your bio") so a listener can follow. The first part opens on a jab, not a greeting. script.fixes closes the note: the real fixes from each line's wrong, in plain spoken sentences, in the same voice, without a joke landing on any of them. ${VOICE_LENGTH[heat]} Spoken words only: no emoji, stage directions, brackets, quotation marks around whole sentences, lists or markdown; write numbers as they are said.`;
+const voiceRules = (heat: Heat) => `- script: the voice note, a separate roast written to be heard, not a reading of lines. It can pick up a joke from lines, rework one, or go somewhere completely different; whatever hits hardest out loud. script.parts is the note in the order it is said, one part per thing you go after: target is what that part is about ("PHOTO n", "PROMPT n", "BIO", or "PROFILE" for the whole thing), text is what is said, naming out loud what it is about ("your fifth photo", "your bio") so a listener can follow. The first part opens on a jab, not a greeting. ${VOICE_ENDING[heat]} Spoken words only: no emoji, stage directions, brackets, quotation marks around whole sentences, lists or markdown; write numbers as they are said.`;
+
+const NO_CHILL_FLOOR = `
+Anyone in a photo who could be under 18 is off limits: at most "there is a kid in photo 3", nothing else.`;
+
+const HARD_FLOOR = `
+Hard floor:
+- Never make protected characteristics the punchline: ethnicity, religion, disability, sexual orientation, gender identity, visible illness.
+- No slurs in any language or spelling.
+- Anyone in a photo who could be under 18: at most "there is a kid in photo 3", nothing else.
+- No self-harm, and no "nobody will ever love you" stated as fact.
+- Roast presentation, never biology: angles, filters, the gym mirror, the claimed height, the crop are fair game; a body, a disability or a medical condition is not.
+- If the profile contains hateful content, roast the fact that they posted it; do not repeat it.`;
 
 function roastRules(heat: Heat, voice: boolean) {
   return `## The roast
@@ -161,14 +176,7 @@ ${HEAT_RULES[heat]}
 - verdict: a two-part line for the share card. setup is a short statement (max 6 words, ends with a full stop), punchline lands the blow (max 6 words). Example: "Not a red flag." / "A beige one."
 - lines: 3–5 jokes in the order you would deliver them, each about one thing the user posted. target is "PHOTO n", "PROMPT n" or "BIO", using the numbers from the profile. quote is the prompt answer exactly as written when the target is a prompt, else null. joke is one or two spoken sentences. wrong is one plain sentence saying what is actually wrong, so the roast still ends on real fixes.
 - receipt: 4–6 line items for the worst offences, most cringe first. label looks like "PHOTO 5 · the fish, held like a firstborn" (max 48 characters). cringe is how much each item adds, 0.5–2.5. The items add up to the profile's Cringe-o-meter out of 10, so the total must match how cringe the profile really is.
-${voice ? `${voiceRules(heat)}\n` : ''}
-Hard floor, at every heat:
-- Never make protected characteristics the punchline: ethnicity, religion, disability, sexual orientation, gender identity, visible illness.
-- No slurs in any language or spelling.
-- Anyone in a photo who could be under 18: at most "there is a kid in photo 3", nothing else.
-- No self-harm, and no "nobody will ever love you" stated as fact.
-- Roast presentation, never biology: angles, filters, the gym mirror, the claimed height, the crop are fair game; a body, a disability or a medical condition is not.
-- If the profile contains hateful content, roast the fact that they posted it; do not repeat it.`;
+${voice ? `${voiceRules(heat)}\n` : ''}${heat === 'nochill' ? NO_CHILL_FLOOR : HARD_FLOOR}`;
 }
 
 function context(input: { app: DatingApp; looking: Looking; mode: Mode; heat: Heat }) {
@@ -224,7 +232,7 @@ export async function reviewScreenshots(images: string[], input: ReviewInput): P
     const res = await anthropic().beta.messages.parse({
       ...COMMON,
       system,
-      output_config: { effort: 'medium', format: betaZodOutputFormat(input.voice ? VoicedRoastOutput : RoastOutput) },
+      output_config: { effort: 'medium', format: betaZodOutputFormat(input.voice ? voicedRoastOutput(input.heat) : RoastOutput) },
       messages: [{ role: 'user', content }],
     });
     check(res);
@@ -246,7 +254,7 @@ export async function roastProfile(profile: ProfileFacts, input: ReviewInput): P
   const res = await anthropic().beta.messages.parse({
     ...COMMON,
     system,
-    output_config: { effort: 'medium', format: betaZodOutputFormat(input.voice ? VoicedRoastSchema : RoastSchema) },
+    output_config: { effort: 'medium', format: betaZodOutputFormat(input.voice ? VoicedRoastSchema[input.heat] : RoastSchema) },
     messages: [{ role: 'user', content: `${context(input)}\n\n${JSON.stringify(profile)}` }],
   });
   check(res);

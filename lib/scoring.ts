@@ -88,11 +88,18 @@ export interface RawRoast {
   verdict: { setup: string; punchline: string };
   lines: { target: string; quote: string | null; joke: string; wrong: string }[];
   receipt: ReceiptItem[];
-  /** The voice note, its own roast to be read aloud: its parts, then the real fixes. */
-  script?: { parts: { target: string; text: string }[]; fixes: string };
+  /** The voice note, its own roast to be read aloud: its parts, then (going easy) the real fixes. */
+  script?: { parts: { target: string; text: string }[]; fixes?: string };
 }
 
 /** "PHOTO 5" → "Photo 5", for "Now roasting: Photo 5". */
+export const FIXES_LABEL = 'The real fixes';
+
+/** Whether the voice note ends on the real fixes. No chill ends on the roast. */
+export function spokenFixes(heat: Heat) {
+  return heat !== 'nochill';
+}
+
 function segmentLabel(target: string) {
   const t = target.trim().toLowerCase();
   return t.charAt(0).toUpperCase() + t.slice(1);
@@ -112,16 +119,17 @@ export function toRoast(heat: Heat, raw: RawRoast): Roast {
   const receipt = raw.receipt.slice(0, 6).map((r) => ({ label: r.label, cringe: round1(clamp(r.cringe, 0, MAX_ITEM_CRINGE)) }));
   const cringe = clampScore(receipt.reduce((sum, r) => sum + r.cringe, 0));
 
-  // The note always ends on the real fixes. With a script, the note is its own
-  // roast and each part has the words that get read aloud; without one, or if
-  // it came back empty, it follows the roast's lines.
+  // With a script, the note is its own roast and each part has the words that
+  // get read aloud; without one, or if it came back empty, it follows the
+  // roast's lines. Going easy, it ends on the real fixes.
   const script = raw.script;
   const fixes = lines.map((l) => l.wrong).join(' ');
   const spoken = (script?.parts ?? []).filter((p) => p.text.trim());
   const roasted = spoken.length
     ? spoken.map((p) => ({ label: segmentLabel(p.target), text: p.text.trim() }))
     : lines.map((l) => ({ label: segmentLabel(l.target), text: l.joke }));
-  const parts = [...roasted, { label: 'The real fixes', text: script?.fixes.trim() || fixes }].map((p) => ({
+  const ending = spokenFixes(heat) ? [{ label: FIXES_LABEL, text: script?.fixes?.trim() || fixes }] : [];
+  const parts = [...roasted, ...ending].map((p) => ({
     label: p.label,
     text: script ? p.text : undefined,
     words: wordCount(p.text),
