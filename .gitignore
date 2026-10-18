@@ -5,3 +5,11 @@ next-env.d.ts
 *.tsbuildinfo
 .env*.local
 .DS_Store
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+
+# local TTS test clips
+test-output/
