@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sampleAnalysis } from './analyze';
 import { toRoast, type RawRoast } from './scoring';
-import type { Analysis } from './types';
+import type { Analysis, Heat } from './types';
 import { voiceOver } from './voice';
 
 // 24 ms MPEG 2 Layer III frames, as in mp3.test.ts.
@@ -18,15 +18,22 @@ const raw: RawRoast = {
     { target: 'BIO', quote: null, joke: 'No bio.', wrong: 'Write one.' },
   ],
   receipt: [{ label: 'BIO · missing', cringe: 2 }],
-  script: { lines: ['Three photos, zero sentences. Your second photo is a fish.', 'And your bio is empty.'], fixes: 'Show people. Write a bio.' },
+  script: {
+    parts: [
+      { target: 'PHOTO 2', text: 'Three photos, zero sentences. Your second photo is a fish.' },
+      { target: 'BIO', text: 'And your bio is empty.' },
+    ],
+    fixes: 'Show people. Write a bio.',
+  },
 };
 
-function analysis(): Analysis {
-  return { ...sampleAnalysis('abc123', { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'nochill', voice: true }), roast: toRoast('nochill', raw) };
+function analysis(heat: Heat = 'easy'): Analysis {
+  return { ...sampleAnalysis('abc123', { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat, voice: true }), roast: toRoast(heat, raw) };
 }
 
 // Each part comes back as a clip whose length depends on what was said.
-const FRAMES: Record<string, number> = { [raw.script!.lines[0]]: 100, [raw.script!.lines[1]]: 50, [raw.script!.fixes]: 75 };
+const [first, second] = raw.script!.parts.map((p) => p.text);
+const FRAMES: Record<string, number> = { [first]: 100, [second]: 50, [raw.script!.fixes!]: 75 };
 const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
   const body = JSON.parse(String(init.body)) as { input: string };
   return new Response(clip(FRAMES[body.input]), { headers: { 'Content-Type': 'audio/mpeg' } });
@@ -46,10 +53,18 @@ describe('voiceOver', () => {
   it('reads each part of the script aloud in the heat’s voice', async () => {
     await voiceOver(analysis());
     const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(String(init.body)));
-    expect(bodies.map((b) => b.input)).toEqual([...raw.script!.lines, raw.script!.fixes]);
-    expect(new Set(bodies.map((b) => b.voice))).toEqual(new Set(['onyx']));
+    expect(bodies.map((b) => b.input)).toEqual([first, second, raw.script!.fixes!]);
+    expect(new Set(bodies.map((b) => b.voice))).toEqual(new Set(['coral']));
     expect(bodies.at(-1).instructions).not.toBe(bodies[0].instructions);
     expect(fetchMock.mock.calls[0][1].headers).toMatchObject({ Authorization: 'Bearer test-key' });
+  });
+
+  it('reads no fixes with no chill', async () => {
+    const { analysis: voiced } = await voiceOver(analysis('nochill'));
+    const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(String(init.body)));
+    expect(bodies.map((b) => b.input)).toEqual([first, second]);
+    expect(new Set(bodies.map((b) => b.voice))).toEqual(new Set(['ash']));
+    expect(voiced.roast!.voice.segments.map((s) => s.label)).toEqual(['Photo 2', 'Bio']);
   });
 
   it('times the note from the audio and serves it from the site', async () => {

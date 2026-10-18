@@ -73,14 +73,14 @@ const SAMPLE_LINES = [
   },
 ];
 
-function segments(durationSec: number) {
-  // Each roast line gets a slice of the note; it always ends on the real fixes.
+function segments(durationSec: number, fixes: boolean) {
+  // Each roast line gets a slice of the note; going easy, it ends on the real fixes.
   const at = (f: number) => Math.round(durationSec * f);
   return [
     { label: 'Photo 5', startSec: 0 },
     { label: 'Prompt 2', startSec: at(0.42) },
     { label: 'Bio', startSec: at(0.7) },
-    { label: 'The real fixes', startSec: at(0.86) },
+    ...(fixes ? [{ label: 'The real fixes', startSec: at(0.86) }] : []),
   ];
 }
 
@@ -97,7 +97,7 @@ export const SAMPLE_ROAST: Record<Heat, Roast> = {
       { label: 'PROMPT 3 · “ask me” (we did. nothing.)', cringe: 1.1 },
       { label: 'BIO · 3 emoji, 0 sentences', cringe: 0.9 },
     ],
-    voice: { durationSec: 41, frameSec: 12, segments: segments(41) },
+    voice: { durationSec: 41, frameSec: 12, segments: segments(41, true) },
   },
   nochill: {
     heat: 'nochill',
@@ -111,6 +111,6 @@ export const SAMPLE_ROAST: Record<Heat, Roast> = {
       { label: 'PROMPT 3 · “ask me” (we did. nothing.)', cringe: 1.3 },
       { label: 'BIO · 3 emoji, 0 sentences', cringe: 1.3 },
     ],
-    voice: { durationSec: 52, frameSec: 31, segments: segments(52) },
+    voice: { durationSec: 52, frameSec: 31, segments: segments(52, false) },
   },
 };

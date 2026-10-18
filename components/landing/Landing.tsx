@@ -42,7 +42,7 @@ export function Landing({ initialMode = 'roast' }: { initialMode?: Mode }) {
                   Your profile, roasted. <span className={s.accent}>No mercy.</span>
                 </h1>
                 <p className={s.sub}>
-                  A voice note that goes through your photos, prompts and bio one by one. It always ends with the real fixes.
+                  A voice note that goes through your photos, prompts and bio. Every joke comes with what&apos;s actually wrong.
                 </p>
               </>
             ) : (
@@ -116,7 +116,7 @@ export function Landing({ initialMode = 'roast' }: { initialMode?: Mode }) {
                 <li>Voice note, line by line through your profile</li>
                 <li>Two heat levels: Go easy · No chill (18+)</li>
                 <li>Verdict and Cringe-o-meter on a shareable card</li>
-                <li>Jokes target what you posted, never your looks</li>
+                <li>Go easy sticks to what you posted. No chill spares nothing</li>
               </ul>
               <button type="button" className={s.modeButton} onClick={() => setMode('roast')}>
                 Preview roast mode
