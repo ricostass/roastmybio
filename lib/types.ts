@@ -65,12 +65,10 @@ export interface ReceiptItem {
   cringe: number;
 }
 
-export interface VoiceSegment {
-  /** Shown as "Now roasting: <label>". */
-  label: string;
-  startSec: number;
-  /** What the roaster says in this part of the note, when there's a spoken script. */
-  text?: string;
+/** What the voice note says: one rant, then (going easy) the real fixes. */
+export interface VoiceScript {
+  roast: string;
+  fixes?: string;
 }
 
 export interface Roast {
@@ -85,7 +83,8 @@ export interface Roast {
     /** Point in the note used for still frames of the card. */
     frameSec: number;
     audioUrl?: string;
-    segments: VoiceSegment[];
+    /** The words read aloud, when there's a spoken script. */
+    script?: VoiceScript;
   };
 }
 

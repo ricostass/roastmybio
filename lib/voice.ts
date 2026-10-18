@@ -1,11 +1,11 @@
 import { joinMp3 } from './mp3';
-import { FIXES_LABEL, round1 } from './scoring';
-import type { Analysis, Heat, Roast, VoiceSegment } from './types';
+import { round1 } from './scoring';
+import type { Analysis, Heat, Roast, VoiceScript } from './types';
 
-// Turns a roast's spoken script into the voice note. Each part of the script
-// (the roast's parts, then the real fixes when going easy) is read by OpenAI's text-to-speech
-// in the heat's voice, and the clips are joined into one MP3. The note's length
-// and the "Now roasting" timings come from the audio itself.
+// Turns a roast's spoken script into the voice note. The rant (then the real
+// fixes, when going easy) is read by OpenAI's text-to-speech in the heat's
+// voice, and the clips are joined into one MP3. The note's length comes from
+// the audio itself.
 
 export function voiceConfigured() {
   return Boolean(process.env.OPENAI_API_KEY);
@@ -43,26 +43,20 @@ async function speak(text: string, voice: string, instructions: string): Promise
   return new Uint8Array(await res.arrayBuffer());
 }
 
-/** Reads the script aloud, one request per part, and times each part from its audio. */
+/** Reads the script aloud, one request for the rant and one for the fixes, and times the note from its audio. */
 export async function recordVoiceNote(
   heat: Heat,
-  segments: VoiceSegment[],
+  script: VoiceScript,
 ): Promise<{ mp3: Uint8Array<ArrayBuffer>; voice: Omit<Roast['voice'], 'audioUrl'> }> {
-  const { voice, roast, fixes } = DELIVERY[heat];
-  const clips = await Promise.all(
-    segments.map((seg) => speak(seg.text ?? '', voice, fixes && seg.label === FIXES_LABEL ? fixes : roast)),
-  );
+  const delivery = DELIVERY[heat];
+  const parts = [{ text: script.roast, instructions: delivery.roast }];
+  if (script.fixes) parts.push({ text: script.fixes, instructions: delivery.fixes ?? delivery.roast });
+  const clips = await Promise.all(parts.map((p) => speak(p.text, delivery.voice, p.instructions)));
   const { mp3, durations } = joinMp3(clips);
   if (durations.some((d) => d === 0)) throw new Error('Text-to-speech returned a clip with no audio.');
 
-  let at = 0;
-  const timed = segments.map((seg, i) => {
-    const startSec = round1(at);
-    at += durations[i];
-    return { ...seg, startSec };
-  });
-  const durationSec = round1(at);
-  return { mp3, voice: { durationSec, frameSec: Math.round(durationSec * 0.3), segments: timed } };
+  const durationSec = round1(durations.reduce((sum, d) => sum + d, 0));
+  return { mp3, voice: { durationSec, frameSec: Math.round(durationSec * 0.3), script } };
 }
 
 /**
@@ -73,9 +67,9 @@ export async function recordVoiceNote(
 export async function voiceOver(analysis: Analysis): Promise<{ analysis: Analysis; voiceNote?: Uint8Array<ArrayBuffer> }> {
   const roast = analysis.roast;
   if (!analysis.voice || !roast || !voiceConfigured()) return { analysis };
-  if (!roast.voice.segments.length || !roast.voice.segments.every((seg) => seg.text)) return { analysis };
+  if (!roast.voice.script) return { analysis };
   try {
-    const { mp3, voice } = await recordVoiceNote(roast.heat, roast.voice.segments);
+    const { mp3, voice } = await recordVoiceNote(roast.heat, roast.voice.script);
     const audioUrl = `/api/voice/${encodeURIComponent(analysis.id)}`;
     return { analysis: { ...analysis, roast: { ...roast, voice: { ...voice, audioUrl } } }, voiceNote: mp3 };
   } catch (err) {

@@ -25,12 +25,7 @@ export function buildCard(analysis: Analysis, req: CardRequest): RoastCard | nul
   const index = req.line ?? 0;
   const line = roast.lines[index];
   if (!line) return null;
-  // Freeze the frame halfway through the part of the voice note that roasts this line.
-  const { segments, durationSec } = roast.voice;
-  const at = segments.findIndex((s) => s.label.toUpperCase() === line.target);
-  const elapsedSec =
-    at === -1 ? roast.voice.frameSec : (segments[at].startSec + (segments[at + 1]?.startSec ?? durationSec)) / 2;
-  return { ...base, kind: 'line', line, voice: { elapsedSec, durationSec } };
+  return { ...base, kind: 'line', line };
 }
 
 export function parseFormat(value: string | null): CardFormat {

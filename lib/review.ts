@@ -57,12 +57,11 @@ const RoastSchema = z.object({
   receipt: z.array(z.object({ label: z.string(), cringe: z.number() })),
 });
 
-// The voice note: its own roast, written for the ear in parts. Go easy ends on
-// the real fixes; no chill ends on the roast.
-const ScriptParts = z.array(z.object({ target: z.string(), text: z.string() }));
+// The voice note: its own roast, written for the ear as one piece. Go easy ends
+// on the real fixes; no chill ends on the roast.
 const VoicedRoastSchema = {
-  easy: RoastSchema.extend({ script: z.object({ parts: ScriptParts, fixes: z.string() }) }),
-  nochill: RoastSchema.extend({ script: z.object({ parts: ScriptParts }) }),
+  easy: RoastSchema.extend({ script: z.object({ roast: z.string(), fixes: z.string() }) }),
+  nochill: RoastSchema.extend({ script: z.object({ roast: z.string() }) }),
 };
 
 const SeriousOutput = z.object({ profile: ProfileSchema, review: ReviewSchema });
@@ -150,11 +149,11 @@ const HEAT_RULES: Record<Heat, string> = {
 const VOICE_ENDING: Record<Heat, string> = {
   easy: "script.fixes closes the note: the real fixes from each line's wrong, in plain spoken sentences, in the same voice, without a joke landing on any of them. 90–160 words in total.",
   nochill:
-    'The note is all rant, no fixes: the last part lands the ending. Its length follows the LENGTH guide above: more to roast on the profile, longer note. Let punctuation carry the delivery: dashes for self-interruptions, ellipses for dead stops and the slow creepy-calm words, exclamation marks on the outbursts, the shouted peak word in capitals.',
+    'The note is all rant, no fixes: it ends the moment the ending lands. Its length follows the LENGTH guide above: more to roast on the profile, longer note. Let punctuation carry the delivery: dashes for self-interruptions, ellipses for dead stops and the slow creepy-calm words, exclamation marks on the outbursts, the shouted peak word in capitals.',
 };
 
 // The script is read out by a text-to-speech voice in the same heat.
-const voiceRules = (heat: Heat) => `- script: the voice note, a separate roast written to be heard, not a reading of lines. It can pick up a joke from lines, rework one, or go somewhere completely different; whatever hits hardest out loud. script.parts is the note in the order it is said, one part per thing you go after: target is what that part is about ("PHOTO n", "PROMPT n", "BIO", or "PROFILE" for the whole thing), text is what is said, naming out loud what it is about ("your fifth photo", "your bio") so a listener can follow. The first part opens on a jab, not a greeting. ${VOICE_ENDING[heat]} Spoken words only: no emoji, stage directions, brackets, quotation marks around whole sentences, lists or markdown; write numbers as they are said.`;
+const voiceRules = (heat: Heat) => `- script: the voice note, a separate roast written to be heard on its own, not a reading of verdict, lines or receipt. It can pick up a joke from them, rework one, or go somewhere completely different; whatever hits hardest out loud. script.roast is the whole rant as one piece of speech that runs from one thing to the next the way a person reacting to the profile would talk. Point at things the way that person would: describe the photo, quote the words back. Never number photos or prompts, never say "prompt", "photo 3" or "the bio section", and never mention the cards. Open on a jab, not a greeting. ${VOICE_ENDING[heat]} Spoken words only: no emoji, stage directions, brackets, quotation marks around whole sentences, lists or markdown; write numbers as they are said.`;
 
 const NO_CHILL_FLOOR = `
 Anyone in a photo who could be under 18 is off limits: at most "there is a kid in photo 3", nothing else.`;

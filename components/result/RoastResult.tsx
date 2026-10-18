@@ -18,9 +18,8 @@ import s from './result.module.css';
 const VIDEO_READY = false;
 
 function VoiceNote({ roast }: { roast: Roast }) {
-  const { durationSec, audioUrl, segments } = roast.voice;
+  const { durationSec, audioUrl } = roast.voice;
   const { playing, elapsed, progress, toggle } = usePlayback(durationSec, audioUrl);
-  const now = [...segments].reverse().find((seg) => elapsed >= seg.startSec) ?? segments[0];
   return (
     <section className={s.voice} aria-label="Voice note">
       <div className={s.voiceHead}>
@@ -34,9 +33,6 @@ function VoiceNote({ roast }: { roast: Roast }) {
           {playing ? '❚❚' : '▶'}
         </button>
         <Waveform progress={progress} height={52} />
-      </div>
-      <div className={s.nowRoasting} aria-live="polite">
-        Now roasting: <strong>{now.label}</strong>
       </div>
     </section>
   );

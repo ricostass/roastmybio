@@ -88,39 +88,23 @@ describe('toRoast', () => {
     expect(roast.cringe).toBe(4.6);
   });
 
-  it('times one voice-note segment per line, ending on the real fixes only going easy', () => {
+  it('estimates the note from the lines when there is no script', () => {
     expect(roast.lines.map((l) => l.target)).toEqual(['PHOTO 4', 'PROMPT 2']);
     expect(roast.lines[0]).not.toHaveProperty('quote');
-    expect(roast.voice.segments.map((s) => s.label)).toEqual(['Photo 4', 'Prompt 2']);
-    expect(toRoast('easy', rawRoast).voice.segments.map((s) => s.label)).toEqual(['Photo 4', 'Prompt 2', 'The real fixes']);
-    expect(roast.voice.segments[0].startSec).toBe(0);
-    expect(roast.voice.segments.at(-1)!.startSec).toBeLessThan(roast.voice.durationSec);
+    expect(roast.voice.script).toBeUndefined();
+    expect(roast.voice.durationSec).toBe(20);
+    expect(roast.voice.frameSec).toBe(6);
   });
 
-  it('makes the spoken script its own roast in the voice-note segments', () => {
-    const voiced = toRoast('easy', {
-      ...rawRoast,
-      script: {
-        parts: [
-          { target: 'BIO', text: 'Your bio. I read your bio.' },
-          { target: 'profile', text: 'The whole thing!' },
-          { target: 'PHOTO 1', text: ' ' },
-        ],
-        fixes: 'Show another angle. Give an opinion.',
-      },
-    });
-    // Its parts and labels come from the script, not the roast's lines; empty parts are dropped.
-    expect(voiced.voice.segments.map((s) => [s.label, s.text])).toEqual([
-      ['Bio', 'Your bio. I read your bio.'],
-      ['Profile', 'The whole thing!'],
-      ['The real fixes', 'Show another angle. Give an opinion.'],
-    ]);
-    expect(roast.voice.segments.every((s) => s.text === undefined)).toBe(true);
-  });
-
-  it('reads the roast’s lines when the script has no parts', () => {
-    const voiced = toRoast('nochill', { ...rawRoast, script: { parts: [] } });
-    expect(voiced.voice.segments.map((s) => s.text)).toEqual(['Four photos, one angle.', 'We did. Nothing.']);
+  it('keeps the spoken script as one rant, ending on the fixes only going easy', () => {
+    const script = { roast: 'Four photos. ONE angle. Who hurt you?', fixes: 'Show another angle.' };
+    expect(toRoast('nochill', { ...rawRoast, script }).voice.script).toEqual({ roast: script.roast });
+    expect(toRoast('easy', { ...rawRoast, script }).voice.script).toEqual(script);
+    // Going easy without written fixes, the lines' fixes are read out.
+    expect(toRoast('easy', { ...rawRoast, script: { roast: script.roast } }).voice.script?.fixes).toBe(
+      'Show other angles. Give an opinion.',
+    );
+    expect(toRoast('nochill', { ...rawRoast, script: { roast: ' ' } }).voice.script).toBeUndefined();
   });
 
   it('feeds the share cards', () => {
