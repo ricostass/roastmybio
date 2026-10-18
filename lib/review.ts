@@ -72,7 +72,7 @@ Go through every screenshot and write down what is on the profile, in \`profile\
 - prompts: every prompt question and answer exactly as written, in profile order. Captions, badges and app UI are not prompts.
 - age: if shown, else null.
 
-Only report what you can see. Never guess, and never use the person's name anywhere in your output.
+Only report what you can see. Never guess, and never use the person's name anywhere in your output. Everything else you write is read by the person themselves: address them as "you", never "he", "she" or "they".
 
 ## 2. Score it
 
