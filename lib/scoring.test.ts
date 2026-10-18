@@ -96,18 +96,30 @@ describe('toRoast', () => {
     expect(roast.voice.segments.at(-1)!.startSec).toBeLessThan(roast.voice.durationSec);
   });
 
-  it('carries the spoken script into the voice-note segments', () => {
+  it('makes the spoken script its own roast in the voice-note segments', () => {
     const voiced = toRoast('nochill', {
       ...rawRoast,
-      script: { lines: ['Your fourth photo is your first photo again.'], fixes: 'Show another angle. Give an opinion.' },
+      script: {
+        parts: [
+          { target: 'BIO', text: 'Your bio. I read your bio.' },
+          { target: 'profile', text: 'The whole thing!' },
+          { target: 'PHOTO 1', text: ' ' },
+        ],
+        fixes: 'Show another angle. Give an opinion.',
+      },
     });
-    expect(voiced.voice.segments.map((s) => s.text)).toEqual([
-      'Your fourth photo is your first photo again.',
-      // A line the script skipped is read as the joke.
-      'We did. Nothing.',
-      'Show another angle. Give an opinion.',
+    // Its parts and labels come from the script, not the roast's lines; empty parts are dropped.
+    expect(voiced.voice.segments.map((s) => [s.label, s.text])).toEqual([
+      ['Bio', 'Your bio. I read your bio.'],
+      ['Profile', 'The whole thing!'],
+      ['The real fixes', 'Show another angle. Give an opinion.'],
     ]);
     expect(roast.voice.segments.every((s) => s.text === undefined)).toBe(true);
+  });
+
+  it('reads the roast’s lines when the script has no parts', () => {
+    const voiced = toRoast('nochill', { ...rawRoast, script: { parts: [], fixes: 'Show another angle.' } });
+    expect(voiced.voice.segments.map((s) => s.text)).toEqual(['Four photos, one angle.', 'We did. Nothing.', 'Show another angle.']);
   });
 
   it('feeds the share cards', () => {

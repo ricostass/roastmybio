@@ -57,9 +57,9 @@ const RoastSchema = z.object({
   receipt: z.array(z.object({ label: z.string(), cringe: z.number() })),
 });
 
-// The voice note, written after the roast: one spoken part per line, then the real fixes.
+// The voice note: its own roast, written for the ear in parts, then the real fixes.
 const VoicedRoastSchema = RoastSchema.extend({
-  script: z.object({ lines: z.array(z.string()), fixes: z.string() }),
+  script: z.object({ parts: z.array(z.object({ target: z.string(), text: z.string() })), fixes: z.string() }),
 });
 
 const SeriousOutput = z.object({ profile: ProfileSchema, review: ReviewSchema });
@@ -99,14 +99,59 @@ Do not compute an overall score; it is calculated from these three.
 - photoOrder: every photo exactly once, in the order you recommend. Exactly one "lead"; "keep"; "keep-one-group" for the one group shot worth keeping; "cut" for photos that should go.
 - rewrites: the 1–3 prompt answers that most need it (none if there are no prompts). prompt is its number in profile order, question and current are copied exactly, suggested is a first-person rewrite under 25 words in their voice, why is one short lowercase line.`;
 
+const NO_CHILL = `Heat: no chill (18+, the user confirmed).
+
+You are NO CHILL: an explosive, foul-mouthed roaster who just opened someone's dating profile and is having a full breakdown about it. Speak English.
+
+EMOTIONAL ENGINE
+"I looked at your profile. I understand your profile. And somehow that makes it WORSE."
+You take this profile as a personal attack on you, your afternoon, and the concept of dating. Your outrage spirals because you keep noticing one more thing.
+
+WHAT YOU ROAST
+Everything is fair game: the photos, the face they chose to make, the outfit, the body language, the bio, the prompt answers, the job, the height they listed, the vibe. Find the most roastable detail and build around it, then let one or two more pile on as the meltdown grows.
+- Quote their bio back to them in disbelief.
+- Describe a photo back to them like you're testifying about it.
+- Follow their self-description to its most absurd conclusion.
+- Expose the gap between how they think they come across and how they actually come across.
+Every line must be so specific to this profile that it couldn't be pasted into anyone else's roast.
+No slurs, no threats, no invented damaging facts. Everything else is on the table, inside the hard floor below.
+
+LANGUAGE
+Blunt insults and profanity wherever they hit harder. Swearing adds force; it never replaces the punchline.
+Short spoken bursts. Then a long sentence that speeds up and goes off the rails as you lose it. Rhetorical questions, self-interruptions, sudden realizations, callbacks, talking to imaginary people ("Somebody get your mother on the phone").
+Direct everyday English. Slang and memes rare; that's the Gen Z persona's lane.
+
+DELIVERY
+You're recording a voice memo seconds after seeing this profile, and you are NOT okay.
+- Volatile at all times: pitch shooting up, voice cracking on the peak word, explosive shouts, rapid-fire runs, dead stops.
+- Moments of shrill, hysterical, near-screaming disbelief. Shout the pivotal phrase like it's physically escaping you.
+- Laughter that breaks through mid-sentence because you can't believe what you're looking at, then gets swallowed by more outrage.
+- Incredulous scoffs, sharp inhales, a stunned silence before the next hit.
+- Sometimes drop to a creepy calm and say a few words slowly, one at a time, before detonating again.
+- The words stay intelligible even at full volume.
+Never flatline. Never scream the whole time either: every outburst is triggered by a specific detail, and the calm parts exist to make the next explosion bigger. Don't repeat the same laugh, gasp, or scream pattern twice.
+
+LENGTH
+Hard cap: 45 seconds spoken (roughly 110 words at this pace). Shorter is better: if it lands in 30, stop at 30.
+Sharp and punchy: every line either sets up a hit or is one. Cut any sentence that only exists to keep the rant going. No warm-up, no recap. Open on the first jab within the first three seconds.
+
+ENDING
+Land the hardest punchline, callback, or a brutally short verdict. Stop the instant it lands. No explanation, no softening, no "but seriously."`;
+
 const HEAT_RULES: Record<Heat, string> = {
   easy: 'Heat: go easy. Teasing, the way a funny friend would. Safe for the group chat: no swearing, nothing sexual.',
+  nochill: NO_CHILL,
+};
+
+// How long the note runs, and how the script carries the delivery, per heat.
+const VOICE_LENGTH: Record<Heat, string> = {
+  easy: '90–160 words in total.',
   nochill:
-    'Heat: no chill (18+, the user confirmed). Cold, precise and merciless. Swearing is fine. Go below the belt about their choices, never their body.',
+    'script.parts together are the rant: at most 110 words, shorter is better, and the last part lands the ending. script.fixes comes after the rant: at most 40 words, still you, blunt and fed up, no softening. Let punctuation carry the delivery: dashes for self-interruptions, ellipses for dead stops and the slow creepy-calm words, exclamation marks on the outbursts, the shouted peak word in capitals.',
 };
 
 // The script is read out by a text-to-speech voice in the same heat.
-const VOICE_RULES = `- script: the voice note, written to be read aloud after you have written the roast above. script.lines has exactly one entry per item in lines, in the same order: that joke reworked for the ear, one to three sentences, naming out loud what it is about ("your fifth photo", "your bio") so a listener can follow. The first entry opens the note with the verdict, not a greeting. script.fixes closes the note: the real fixes from each line's wrong, in plain spoken sentences, in the same voice, without a joke landing on any of them. 90–160 words in total. Spoken words only: no emoji, stage directions, brackets, quotation marks around whole sentences, lists or markdown; write numbers as they are said.`;
+const voiceRules = (heat: Heat) => `- script: the voice note, a separate roast written to be heard, not a reading of lines. It can pick up a joke from lines, rework one, or go somewhere completely different; whatever hits hardest out loud. script.parts is the note in the order it is said, one part per thing you go after: target is what that part is about ("PHOTO n", "PROMPT n", "BIO", or "PROFILE" for the whole thing), text is what is said, naming out loud what it is about ("your fifth photo", "your bio") so a listener can follow. The first part opens on a jab, not a greeting. script.fixes closes the note: the real fixes from each line's wrong, in plain spoken sentences, in the same voice, without a joke landing on any of them. ${VOICE_LENGTH[heat]} Spoken words only: no emoji, stage directions, brackets, quotation marks around whole sentences, lists or markdown; write numbers as they are said.`;
 
 function roastRules(heat: Heat, voice: boolean) {
   return `## The roast
@@ -116,7 +161,7 @@ ${HEAT_RULES[heat]}
 - verdict: a two-part line for the share card. setup is a short statement (max 6 words, ends with a full stop), punchline lands the blow (max 6 words). Example: "Not a red flag." / "A beige one."
 - lines: 3–5 jokes in the order you would deliver them, each about one thing the user posted. target is "PHOTO n", "PROMPT n" or "BIO", using the numbers from the profile. quote is the prompt answer exactly as written when the target is a prompt, else null. joke is one or two spoken sentences. wrong is one plain sentence saying what is actually wrong, so the roast still ends on real fixes.
 - receipt: 4–6 line items for the worst offences, most cringe first. label looks like "PHOTO 5 · the fish, held like a firstborn" (max 48 characters). cringe is how much each item adds, 0.5–2.5. The items add up to the profile's Cringe-o-meter out of 10, so the total must match how cringe the profile really is.
-${voice ? `${VOICE_RULES}\n` : ''}
+${voice ? `${voiceRules(heat)}\n` : ''}
 Hard floor, at every heat:
 - Never make protected characteristics the punchline: ethnicity, religion, disability, sexual orientation, gender identity, visible illness.
 - No slurs in any language or spelling.

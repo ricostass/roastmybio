@@ -21,8 +21,9 @@ const DELIVERY: Record<Heat, { voice: string; roast: string; fixes: string }> = 
   nochill: {
     voice: 'onyx',
     roast:
-      'A roast-battle veteran handing down a verdict. Cold, deadpan and unhurried; never raise your voice. A short pause before each punchline, then say it flat, with quiet amusement.',
-    fixes: 'A roast-battle veteran reading out the sentence. Dry, precise and unhurried, faintly amused.',
+      "NO CHILL: an explosive, foul-mouthed roaster recording a voice memo seconds after opening someone's dating profile, and you are NOT okay. You take this profile as a personal attack. Volatile at all times: pitch shooting up, voice cracking on the peak word, explosive shouts, rapid-fire runs, dead stops. Moments of shrill, hysterical, near-screaming disbelief; shout the pivotal phrase like it's physically escaping you. Laughter that breaks through mid-sentence because you can't believe what you're looking at, then gets swallowed by more outrage. Incredulous scoffs, sharp inhales, a stunned silence before the next hit. Sometimes drop to a creepy calm and say a few words slowly, one at a time, before detonating again. Never flatline, and never scream the whole time: every outburst is triggered by a specific detail, and the calm parts make the next explosion bigger. Don't repeat the same laugh, gasp or scream pattern twice. The words stay intelligible even at full volume.",
+    fixes:
+      "NO CHILL, out of breath after the meltdown and done screaming. Blunt, fast and exasperated, like you're listing what to fix so you never have to see this profile again. No softening, words clear.",
   },
 };
 
