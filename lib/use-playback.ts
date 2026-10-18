@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Play/pause state for a voice note. Plays `audioUrl` when there is one;
- * otherwise runs a clock so the waveform and "now roasting" still advance
- * (the roaster's audio is a placeholder for now).
+ * otherwise (samples, or no text-to-speech configured) runs a clock so the
+ * waveform and "now roasting" still advance.
  */
 export function usePlayback(durationSec: number, audioUrl?: string, startSec = 0) {
   const [playing, setPlaying] = useState(false);
@@ -26,11 +26,13 @@ export function usePlayback(durationSec: number, audioUrl?: string, startSec = 0
     const end = () => setPlaying(false);
     el.addEventListener('timeupdate', tick);
     el.addEventListener('ended', end);
+    el.addEventListener('error', end);
     audio.current = el;
     return () => {
       el.pause();
       el.removeEventListener('timeupdate', tick);
       el.removeEventListener('ended', end);
+      el.removeEventListener('error', end);
       audio.current = null;
     };
   }, [audioUrl, seek]);
@@ -55,7 +57,7 @@ export function usePlayback(durationSec: number, audioUrl?: string, startSec = 0
       if (audio.current) audio.current.currentTime = 0;
     }
     if (audio.current) {
-      if (next) void audio.current.play();
+      if (next) audio.current.play().catch(() => setPlaying(false));
       else audio.current.pause();
     }
     setPlaying(next);

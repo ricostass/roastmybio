@@ -96,6 +96,20 @@ describe('toRoast', () => {
     expect(roast.voice.segments.at(-1)!.startSec).toBeLessThan(roast.voice.durationSec);
   });
 
+  it('carries the spoken script into the voice-note segments', () => {
+    const voiced = toRoast('nochill', {
+      ...rawRoast,
+      script: { lines: ['Your fourth photo is your first photo again.'], fixes: 'Show another angle. Give an opinion.' },
+    });
+    expect(voiced.voice.segments.map((s) => s.text)).toEqual([
+      'Your fourth photo is your first photo again.',
+      // A line the script skipped is read as the joke.
+      'We did. Nothing.',
+      'Show another angle. Give an opinion.',
+    ]);
+    expect(roast.voice.segments.every((s) => s.text === undefined)).toBe(true);
+  });
+
   it('feeds the share cards', () => {
     const analysis = { id: 'x', meta: { photos: 4, prompts: 2 }, roast } as Analysis;
     expect(buildCard(analysis, { kind: 'verdict', format: '1:1' })?.cringe).toBe(4.6);

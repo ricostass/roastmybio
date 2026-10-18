@@ -88,6 +88,8 @@ export interface RawRoast {
   verdict: { setup: string; punchline: string };
   lines: { target: string; quote: string | null; joke: string; wrong: string }[];
   receipt: ReceiptItem[];
+  /** The voice note, to be read aloud: one part per line, then the real fixes. */
+  script?: { lines: string[]; fixes: string };
 }
 
 /** "PHOTO 5" → "Photo 5", for "Now roasting: Photo 5". */
@@ -110,15 +112,25 @@ export function toRoast(heat: Heat, raw: RawRoast): Roast {
   const receipt = raw.receipt.slice(0, 6).map((r) => ({ label: r.label, cringe: round1(clamp(r.cringe, 0, MAX_ITEM_CRINGE)) }));
   const cringe = clampScore(receipt.reduce((sum, r) => sum + r.cringe, 0));
 
-  // Spoken at roughly 2.6 words a second, plus a few seconds for the real fixes.
-  const words = lines.reduce((n, l) => n + wordCount(l.joke) + wordCount(l.wrong), 0);
-  const durationSec = Math.round(clamp(words / 2.6 + 6, 20, 90));
-  // Each line gets an equal slice of the note; it always ends on the real fixes.
-  const fixesAt = Math.round(durationSec * 0.86);
-  const segments = [
-    ...lines.map((l, i) => ({ label: segmentLabel(l.target), startSec: Math.round((fixesAt * i) / lines.length) })),
-    { label: 'The real fixes', startSec: fixesAt },
-  ];
+  // One part of the note per line, and it always ends on the real fixes. With a
+  // script, each part has the words that get read aloud; anything the script
+  // left empty is read as written in the roast.
+  const script = raw.script;
+  const fixes = lines.map((l) => l.wrong).join(' ');
+  const parts = [
+    ...lines.map((l, i) => ({ label: segmentLabel(l.target), text: script?.lines[i]?.trim() || l.joke })),
+    { label: 'The real fixes', text: script?.fixes.trim() || fixes },
+  ].map((p) => ({ label: p.label, text: script ? p.text : undefined, words: wordCount(p.text) }));
+
+  // Until there's audio to time it from, assume roughly 2.6 spoken words a second.
+  const words = Math.max(1, parts.reduce((n, p) => n + p.words, 0));
+  const durationSec = Math.round(clamp(words / 2.6 + 4, 20, 90));
+  let said = 0;
+  const segments = parts.map((p) => {
+    const startSec = Math.round((durationSec * said) / words);
+    said += p.words;
+    return { label: p.label, startSec, ...(p.text ? { text: p.text } : {}) };
+  });
 
   return {
     heat,

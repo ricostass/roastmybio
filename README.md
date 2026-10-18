@@ -12,7 +12,7 @@ Built with Next.js 16 (App Router) and React 19 from the design handoff.
 
 ```bash
 npm install
-ANTHROPIC_API_KEY=... npm run dev   # http://localhost:3000
+ANTHROPIC_API_KEY=... OPENAI_API_KEY=... npm run dev   # http://localhost:3000
 npm test           # unit tests (vitest)
 npm run lint
 npm run typecheck
@@ -36,6 +36,7 @@ Demo results you can open without uploading anything:
 | `/s/[id]` | Public share page for a roast card. |
 | `/cards` | Card gallery: all four directions, both heat levels, feed formats and the video frame. |
 | `POST /api/analyze` | Multipart upload: `screenshots` (1–9 PNG/JPG, ≤10 MB each), `mode`, `looking`, `app`, `heat`, `voice`, `adult`. Returns `{ id }`. |
+| `GET /api/voice/[id]` | The roast's voice note as MP3. Answers byte ranges (Safari needs them to play audio). 404 when the result has no recorded note. |
 | `GET /api/card/[id]` | Card PNG. Query: `kind=verdict\|line`, `line`, `format=9:16\|4:5\|1:1`, `t=verdict\|poster\|voice\|receipt`. |
 | `POST /api/roast/[id]/soften` | "Too much? Go easy on me": re-runs the roast at the lower heat and returns the new `{ id }`. |
 
@@ -90,6 +91,17 @@ The arithmetic happens in code (`lib/scoring.ts`), not in the model:
 
 The result is stored once, and the free preview, the paywall teaser and the unlocked review all render that same stored result, so the score shown before paying is the score after. "Too much? Go easy on me" re-runs only the roast from the stored profile facts; the serious review and score carry over unchanged.
 
+## Voice note
+
+When the roast is delivered as a voice note (the "Voice note" switch on the upload form), it is recorded right after the review:
+
+1. **Script.** In the same call that writes the roast, Claude also writes `script`: one spoken part per roast line, in the order they are delivered (the first opens with the verdict), then a closing part that runs through the real fixes. It is written for the ear, in the heat's voice. `toRoast()` stores each part on its voice-note segment (`segment.text`). A line the script skipped is read as its joke.
+2. **Audio.** `voiceOver()` in `lib/voice.ts` sends each part to OpenAI's text-to-speech (`gpt-4o-mini-tts`) in parallel. Go easy uses a warm, teasing voice (`coral`) and No chill a cold, deadpan one (`onyx`). The closing fixes part gets its own delivery instructions so the bit drops for the fixes.
+3. **Timing.** The clips are joined into one MP3 (`lib/mp3.ts` copies the audio frames over and leaves out each clip's tags and VBR header). Each clip's length is read from its frames, so the note's length and every "Now roasting" start time come from the real audio instead of a word-count estimate.
+4. **Playback.** The MP3 is stored with the result and served from `/api/voice/[id]`, which `roast.voice.audioUrl` points at. The play button plays it, and "Share card + voice note" attaches it to the share sheet (or downloads it). "Share this line" shares only the card.
+
+"Too much? Go easy on me" records a new note for the softer roast. If text-to-speech isn't configured or fails, the roast still works: the result keeps its estimated timings, the player runs on a clock, and the share button reads "Share card". The demo results have no recorded audio.
+
 Without `ANTHROPIC_API_KEY`, `npm run dev` falls back to the sample result with a visible "Sample result" notice, and production returns a 503 instead of showing made-up numbers.
 
 ## Configuration
@@ -98,6 +110,9 @@ Without `ANTHROPIC_API_KEY`, `npm run dev` falls back to the sample result with 
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | — | Required for real analysis. |
 | `ANTHROPIC_WORKSPACE_ID` | — | Only for API keys that aren't scoped to a workspace: the workspace to bill requests to. |
+| `OPENAI_API_KEY` | — | Records the roast's voice note with OpenAI text-to-speech. Without it, there's no audio. |
+| `OPENAI_TTS_MODEL` | `gpt-4o-mini-tts` | Text-to-speech model. It must accept `instructions`. |
+| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | Only to send text-to-speech through a proxy or a compatible endpoint. |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Absolute base for share-page metadata (`og:image`). Its host is also the link printed on roast cards (just "roastmybio" when local). |
 | `NEXT_PUBLIC_CARD_TEMPLATE` | `verdict` | Which roast card direction the share flow uses. |
 
@@ -106,9 +121,8 @@ Without `ANTHROPIC_API_KEY`, `npm run dev` falls back to the sample result with 
 These parts are stubbed so the whole flow can be exercised end to end:
 
 - **Sources**: fixes carry an evidence tag, but their source fields are still placeholders. Screenshots are discarded after analysis; only what was read off them is kept.
-- **Storage**: results are kept in memory (`lib/store.ts`). They're lost on restart and aren't shared across server instances.
+- **Storage**: results and their voice-note MP3s (a few hundred KB each) are kept in memory (`lib/store.ts`). They're lost on restart and aren't shared across server instances.
 - **Checkout**: the unlock buttons reveal the review in place. Quick check shows only the biggest fix. Unlock state isn't persisted.
-- **Voice note audio**: no audio yet. The player runs a clock, so the waveform and "Now roasting" still advance. Set `roast.voice.audioUrl` to play real audio; sharing then attaches it too.
 - **Video**: the 1f frame is drawn, but MP4 rendering isn't built. The "+ video" share option stays hidden until it is.
 - **Photo order tiles**: these show placeholders. The real tiles would be the user's photos, which aren't retained.
 - **Placeholders from the design**: `[PRICE]`, `[PRIVACY PROMISE]`, source fields, and the Privacy / Terms / Sources pages.

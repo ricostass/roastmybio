@@ -66,12 +66,14 @@ export function RoastResult({ analysis }: { analysis: Analysis }) {
   const [status, setStatus] = useState<string | null>(null);
   const [softening, setSoftening] = useState(false);
 
-  async function share(reqs: CardRequest[]) {
+  async function share(reqs: CardRequest[], withVoice = false) {
     setStatus('Making your cards…');
     try {
       const files = await cardFiles(analysis.id, reqs);
-      if (roast.voice.audioUrl) {
-        const audio = await fetch(roast.voice.audioUrl).then((r) => r.blob());
+      if (withVoice && roast.voice.audioUrl) {
+        const res = await fetch(roast.voice.audioUrl);
+        if (!res.ok) throw new Error('Voice note download failed');
+        const audio = await res.blob();
         files.push(new File([audio], `${BRAND}-voice-note.mp3`, { type: audio.type || 'audio/mpeg' }));
       }
       const data = { files, text: 'An AI roasted my dating profile.', url: `${location.origin}/s/${analysis.id}` };
@@ -123,9 +125,9 @@ export function RoastResult({ analysis }: { analysis: Analysis }) {
           <button
             type="button"
             className={s.primary}
-            onClick={() => share(CARD_FORMATS.map((format) => ({ kind: 'verdict', format })))}
+            onClick={() => share(CARD_FORMATS.map((format) => ({ kind: 'verdict', format })), true)}
           >
-            {analysis.voice ? 'Share card + voice note' : 'Share card'}
+            {roast.voice.audioUrl ? 'Share card + voice note' : 'Share card'}
           </button>
           <div className={s.formats}>
             {CARD_FORMATS.map((f, i) => (

@@ -2,10 +2,11 @@ import { analyzeProfile } from '@/lib/analyze';
 import { ReviewError } from '@/lib/review';
 import { saveAnalysis } from '@/lib/store';
 import { parseCheckOptions, validateScreenshots } from '@/lib/upload';
+import { voiceOver } from '@/lib/voice';
 
 export const runtime = 'nodejs';
-// Reading up to nine screenshots with the model takes a while.
-export const maxDuration = 120;
+// Reading up to nine screenshots with the model, then recording the voice note, takes a while.
+export const maxDuration = 180;
 
 // POST multipart: screenshots (1–9 PNG/JPG), mode, looking, app, heat, voice, adult.
 export async function POST(request: Request) {
@@ -26,8 +27,8 @@ export async function POST(request: Request) {
   if (typeof options === 'string') return Response.json({ error: options }, { status: 400 });
 
   try {
-    const analysis = await analyzeProfile(options, screenshots);
-    saveAnalysis(analysis);
+    const { analysis, voiceNote } = await voiceOver(await analyzeProfile(options, screenshots));
+    saveAnalysis(analysis, voiceNote);
     return Response.json({ id: analysis.id });
   } catch (err) {
     if (err instanceof ReviewError) return Response.json({ error: err.message }, { status: err.status });
