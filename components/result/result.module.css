@@ -573,3 +573,12 @@
   color: var(--ink);
   font-weight: 600;
 }
+
+.notice {
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border: 1px dashed var(--ac);
+  border-radius: 12px;
+  font: 500 14px/1.4 var(--body);
+  color: var(--mu);
+}

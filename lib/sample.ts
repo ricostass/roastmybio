@@ -1,14 +1,8 @@
+import { PLACEHOLDER_SOURCE } from './scoring';
 import type { Heat, Roast, SeriousReview } from './types';
 
 // Sample copy from the design handoff, used verbatim. Bracketed values are
 // placeholders that stay in place until real sources are wired up.
-
-const PLACEHOLDER_SOURCE = {
-  publisher: '[Publisher]',
-  year: '[Year]',
-  sample: 'n=[sample size]',
-  finding: '[One-line finding this fix is based on]',
-};
 
 export const SAMPLE_SERIOUS: SeriousReview = {
   overall: 7.4,

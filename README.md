@@ -1,18 +1,18 @@
-# roastmybio — ProfileCheck
+# roastmybio
 
-ProfileCheck reviews a dating profile from uploaded screenshots. The same
+roastmybio reviews a dating profile from uploaded screenshots. The same
 analysis is delivered in one of two modes:
 
+- **Roast** (the default): a comedy voice note at one of two heat levels (Go easy / No chill · 18+), plus shareable roast cards.
 - **Serious**: a score out of 10, sub-scores, top fixes with sources, photo order and prompt rewrites.
-- **Roast**: a comedy voice note at one of two heat levels (Go easy / No chill · 18+), plus shareable roast cards.
 
-Built with Next.js 16 (App Router) and React 19 from the ProfileCheck design handoff.
+Built with Next.js 16 (App Router) and React 19 from the design handoff.
 
 ## Run it
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+ANTHROPIC_API_KEY=... npm run dev   # http://localhost:3000
 npm test           # unit tests (vitest)
 npm run lint
 npm run typecheck
@@ -31,7 +31,7 @@ Demo results you can open without uploading anything:
 
 | Route | What it is |
 | --- | --- |
-| `/` | Landing page. The Serious/Roast toggle re-themes the whole page. Contains the upload form. `?mode=roast` opens in roast mode. |
+| `/` | Landing page, in roast mode by default. The Roast/Serious toggle re-themes the whole page. Contains the upload form, which previews each screenshot as it's added. `?mode=serious` opens in serious mode. |
 | `/result/[id]` | The result. Serious analyses show the teaser/paywall, then the full review. Roast analyses show the roast; `?view=serious` shows the serious review of the same analysis. |
 | `/s/[id]` | Public share page for a roast card. |
 | `/cards` | Card gallery: all four directions, both heat levels, feed formats and the video frame. |
@@ -78,21 +78,37 @@ System prompts for each roaster persona live in [`prompts/roasters/`](prompts/ro
 
 Each prompt takes a JSON profile (`language`, `age`, `looking_for`, `photos`, `bio`, `prompts`) as the user message and returns a single JSON object with `persona`, `script`, `jokes`, `cards` and `word_count`.
 
+## Analysis
+
+`analyzeProfile()` in `lib/analyze.ts` sends the screenshots (downscaled to JPEG with `sharp`) to Claude in one call (`lib/review.ts`). The model first writes down what is on the profile (each photo, the bio, every prompt), then scores photos, prompts and bio against a fixed rubric, and writes the fixes, photo order, rewrites and, in roast mode, the roast.
+
+The arithmetic happens in code (`lib/scoring.ts`), not in the model:
+
+- **Overall score** = photos × 0.5 + prompts × 0.3 + bio × 0.2, one decimal.
+- **Cringe-o-meter** = the sum of the roast receipt's line items, capped at 10.
+- **Photo / prompt counts** in the result header are the numbers the model read off the screenshots.
+
+The result is stored once, and the free preview, the paywall teaser and the unlocked review all render that same stored result, so the score shown before paying is the score after. "Too much? Go easy on me" re-runs only the roast from the stored profile facts; the serious review and score carry over unchanged.
+
+Without `ANTHROPIC_API_KEY`, `npm run dev` falls back to the sample result with a visible "Sample result" notice, and production returns a 503 instead of showing made-up numbers.
+
 ## Configuration
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Absolute base for share-page metadata (`og:image`). |
+| `ANTHROPIC_API_KEY` | — | Required for real analysis. |
+| `ANTHROPIC_WORKSPACE_ID` | — | Only for API keys that aren't scoped to a workspace: the workspace to bill requests to. |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Absolute base for share-page metadata (`og:image`). Its host is also the link printed on roast cards (just "roastmybio" when local). |
 | `NEXT_PUBLIC_CARD_TEMPLATE` | `verdict` | Which roast card direction the share flow uses. |
 
 ## Not built yet
 
 These parts are stubbed so the whole flow can be exercised end to end:
 
-- **Analysis**: `analyzeProfile()` in `lib/analyze.ts` returns the handoff's sample result. The model-backed review plugs in there. Screenshots are validated and then discarded; nothing is stored.
+- **Sources**: fixes carry an evidence tag, but their source fields are still placeholders. Screenshots are discarded after analysis; only what was read off them is kept.
 - **Storage**: results are kept in memory (`lib/store.ts`). They're lost on restart and aren't shared across server instances.
 - **Checkout**: the unlock buttons reveal the review in place. Quick check shows only the biggest fix. Unlock state isn't persisted.
 - **Voice note audio**: no audio yet. The player runs a clock, so the waveform and "Now roasting" still advance. Set `roast.voice.audioUrl` to play real audio; sharing then attaches it too.
 - **Video**: the 1f frame is drawn, but MP4 rendering isn't built. The "+ video" share option stays hidden until it is.
-- **Photo order tiles**: these show placeholders. The real tiles would be the user's screenshots, which aren't retained.
+- **Photo order tiles**: these show placeholders. The real tiles would be the user's photos, which aren't retained.
 - **Placeholders from the design**: `[PRICE]`, `[PRIVACY PROMISE]`, source fields, and the Privacy / Terms / Sources pages.

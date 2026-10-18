@@ -87,6 +87,14 @@ export interface Roast {
   };
 }
 
+/** What the review read off the screenshots. Kept so a roast can be re-run without them. */
+export interface ProfileFacts {
+  photos: { index: number; description: string }[];
+  bio: string | null;
+  prompts: { question: string; answer: string }[];
+  age: number | null;
+}
+
 export interface Analysis {
   id: string;
   createdAt: string;
@@ -97,6 +105,9 @@ export interface Analysis {
   meta: { photos: number; prompts: number };
   serious: SeriousReview;
   roast?: Roast;
+  profile?: ProfileFacts;
+  /** True when this is the built-in sample, not a review of uploaded screenshots. */
+  demo?: boolean;
 }
 
 // ---------- Roast card (shared by every card template) ----------

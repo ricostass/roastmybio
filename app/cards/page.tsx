@@ -11,7 +11,7 @@ import s from './cards.module.css';
 // Design review: every roast card direction, rendered live from the shared
 // card model. Each preview links to the PNG export of the same card.
 
-export const metadata: Metadata = { title: 'Roast cards — ProfileCheck', robots: { index: false } };
+export const metadata: Metadata = { title: 'Roast cards — roastmybio', robots: { index: false } };
 
 const VARIANTS: { id: string; label: string; req: CardRequest }[] = [
   { id: DEMO_IDS.roastEasy, label: 'Verdict · Go easy', req: { kind: 'verdict', format: '9:16' } },

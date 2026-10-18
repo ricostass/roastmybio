@@ -1,10 +1,11 @@
+import { BRAND } from '@/lib/brand';
 import Link from 'next/link';
 import styles from './Wordmark.module.css';
 
 export function Wordmark({ size = 24, href }: { size?: number; href?: string }) {
   const content = (
     <>
-      ProfileCheck<span className={styles.dot}>.</span>
+      {BRAND}<span className={styles.dot}>.</span>
     </>
   );
   const style = { fontSize: size };

@@ -5,7 +5,7 @@ import { SeriousResult } from '@/components/result/SeriousResult';
 import { getAnalysis } from '@/lib/store';
 
 export const metadata: Metadata = {
-  title: 'Your result — ProfileCheck',
+  title: 'Your result — roastmybio',
   robots: { index: false },
 };
 

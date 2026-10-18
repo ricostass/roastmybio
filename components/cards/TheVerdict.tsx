@@ -1,3 +1,4 @@
+import { BRAND_HOST } from '@/lib/brand';
 import { FORMAT_SIZE } from '@/lib/cards';
 import { clock, meterBlocks, score, waveform } from '@/lib/format';
 import type { RoastCard } from '@/lib/types';
@@ -40,7 +41,7 @@ function Tagline({ card, fonts, align = 'left', size = 30 }: { card: RoastCard; 
       }}
     >
       <div style={{ display: 'flex' }}>An AI roasted my dating profile.</div>
-      <div style={{ display: 'flex', ...type(fonts.mono, 500, size - 2, 1.3) }}>profilecheck.app</div>
+      <div style={{ display: 'flex', ...type(fonts.mono, 500, size - 2, 1.3) }}>{BRAND_HOST}</div>
     </div>
   );
 }
@@ -257,7 +258,7 @@ function Square({ card, fonts }: { card: RoastCard; fonts: CardFonts }) {
           </span>
           <span style={{ ...type(fonts.mono, 500, 26), letterSpacing: ls(0.08, 26), color: muted(0.6) }}>/10 CRINGE</span>
         </div>
-        <div style={{ display: 'flex', ...type(fonts.mono, 500, 26), color: muted(0.75) }}>profilecheck.app</div>
+        <div style={{ display: 'flex', ...type(fonts.mono, 500, 26), color: muted(0.75) }}>{BRAND_HOST}</div>
       </div>
     </Frame>
   );

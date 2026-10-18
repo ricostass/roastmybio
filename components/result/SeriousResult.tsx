@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Wordmark } from '@/components/Wordmark';
 import { metaLine } from '@/lib/format';
 import type { Analysis, Fix, PhotoPick, PromptRewrite } from '@/lib/types';
-import { ScoreBlock } from './ScoreBlock';
+import { SampleNotice, ScoreBlock } from './ScoreBlock';
 import s from './result.module.css';
 
 type Tier = 'quick' | 'full';
@@ -208,6 +208,7 @@ export function SeriousResult({ analysis }: { analysis: Analysis }) {
           )}
         </header>
         <div className={s.meta}>{meta}</div>
+        {analysis.demo && <SampleNotice />}
         <ScoreBlock review={analysis.serious} />
         {tier ? <FullReview analysis={analysis} tier={tier} /> : <Locked analysis={analysis} onUnlock={setTier} />}
       </main>

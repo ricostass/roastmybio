@@ -9,7 +9,9 @@ import { Wordmark } from '@/components/Wordmark';
 import { cardImageUrl, type CardRequest } from '@/lib/cards';
 import { clock, lowerFirst, metaLine } from '@/lib/format';
 import { CARD_FORMATS, type Analysis, type Roast } from '@/lib/types';
+import { BRAND } from '@/lib/brand';
 import { usePlayback } from '@/lib/use-playback';
+import { SampleNotice } from './ScoreBlock';
 import s from './result.module.css';
 
 /** The MP4 (card animated with the voice note) isn't rendered yet. */
@@ -45,7 +47,7 @@ async function cardFiles(id: string, reqs: CardRequest[]) {
     reqs.map(async (req) => {
       const res = await fetch(cardImageUrl(id, req));
       if (!res.ok) throw new Error('Card render failed');
-      const name = `profilecheck-${req.kind}${req.kind === 'line' ? `-${(req.line ?? 0) + 1}` : ''}-${req.format.replace(':', 'x')}.png`;
+      const name = `${BRAND}-${req.kind}${req.kind === 'line' ? `-${(req.line ?? 0) + 1}` : ''}-${req.format.replace(':', 'x')}.png`;
       return new File([await res.blob()], name, { type: 'image/png' });
     }),
   );
@@ -70,7 +72,7 @@ export function RoastResult({ analysis }: { analysis: Analysis }) {
       const files = await cardFiles(analysis.id, reqs);
       if (roast.voice.audioUrl) {
         const audio = await fetch(roast.voice.audioUrl).then((r) => r.blob());
-        files.push(new File([audio], 'profilecheck-voice-note.mp3', { type: audio.type || 'audio/mpeg' }));
+        files.push(new File([audio], `${BRAND}-voice-note.mp3`, { type: audio.type || 'audio/mpeg' }));
       }
       const data = { files, text: 'An AI roasted my dating profile.', url: `${location.origin}/s/${analysis.id}` };
       if (navigator.canShare?.(data)) {
@@ -105,6 +107,7 @@ export function RoastResult({ analysis }: { analysis: Analysis }) {
           </span>
         </header>
 
+        {analysis.demo && <SampleNotice />}
         <div className={s.verdictCard}>
           <Image
             src={cardImageUrl(analysis.id, { kind: 'verdict', format: '1:1' })}

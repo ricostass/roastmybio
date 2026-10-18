@@ -7,7 +7,7 @@ import { HeroSample } from './HeroSample';
 import { UploadForm } from './UploadForm';
 import s from './landing.module.css';
 
-export function Landing({ initialMode = 'serious' }: { initialMode?: Mode }) {
+export function Landing({ initialMode = 'roast' }: { initialMode?: Mode }) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const roast = mode === 'roast';
 
@@ -29,11 +29,11 @@ export function Landing({ initialMode = 'serious' }: { initialMode?: Mode }) {
         <section className={s.hero}>
           <div className={s.heroCopy}>
             <div className={s.toggle} role="group" aria-label="How do you want to hear it?">
-              <button type="button" aria-pressed={!roast} onClick={() => setMode('serious')}>
-                Serious
-              </button>
               <button type="button" aria-pressed={roast} onClick={() => setMode('roast')}>
                 Roast
+              </button>
+              <button type="button" aria-pressed={!roast} onClick={() => setMode('serious')}>
+                Serious
               </button>
             </div>
             {roast ? (

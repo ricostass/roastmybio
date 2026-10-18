@@ -1,3 +1,4 @@
+import { BRAND_HOST } from '@/lib/brand';
 import { FORMAT_SIZE, currentCaptionWord } from '@/lib/cards';
 import { clock, score, waveform } from '@/lib/format';
 import type { RoastCard } from '@/lib/types';
@@ -79,7 +80,7 @@ export function VoiceNoteCard({ card, fonts }: { card: RoastCard; fonts: CardFon
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 56 }}>
           <Wordmark size={40} fonts={fonts} />
-          <div style={{ display: 'flex', ...type(fonts.mono, 500, 28), color: muted(0.75) }}>profilecheck.app · roast mine</div>
+          <div style={{ display: 'flex', ...type(fonts.mono, 500, 28), color: muted(0.75) }}>{BRAND_HOST} · roast mine</div>
         </div>
       </Frame>
     );
@@ -112,7 +113,7 @@ export function VoiceNoteCard({ card, fonts }: { card: RoastCard; fonts: CardFon
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ...type(fonts.body, 500, 30, 1.3), color: muted(0.75) }}>
           <div style={{ display: 'flex' }}>An AI roasted my profile.</div>
           <Wordmark size={40} fonts={fonts} color={fg} />
-          <div style={{ display: 'flex', ...type(fonts.mono, 500, 28, 1.3) }}>profilecheck.app</div>
+          <div style={{ display: 'flex', ...type(fonts.mono, 500, 28, 1.3) }}>{BRAND_HOST}</div>
         </div>
       </div>
     </Frame>
