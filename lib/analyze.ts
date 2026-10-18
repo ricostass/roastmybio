@@ -64,7 +64,7 @@ export async function analyzeProfile(input: AnalyzeInput, screenshots: File[]): 
 
 /** "Too much? Go easy on me": the same review with the roast re-run at the lower heat. */
 export async function softenRoast(original: Analysis): Promise<Analysis> {
-  const easy = { mode: 'roast' as const, app: original.app, looking: original.looking, heat: 'easy' as const };
+  const easy = { mode: 'roast' as const, app: original.app, looking: original.looking, heat: 'easy' as const, voice: original.voice };
   const roast =
     original.profile && reviewConfigured() ? toRoast('easy', await roastProfile(original.profile, easy)) : SAMPLE_ROAST.easy;
   return { ...original, id: newId(), createdAt: new Date().toISOString(), roast };

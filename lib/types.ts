@@ -69,6 +69,8 @@ export interface VoiceSegment {
   /** Shown as "Now roasting: <label>". */
   label: string;
   startSec: number;
+  /** What the roaster says in this part of the note, when there's a spoken script. */
+  text?: string;
 }
 
 export interface Roast {

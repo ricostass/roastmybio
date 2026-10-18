@@ -57,8 +57,14 @@ const RoastSchema = z.object({
   receipt: z.array(z.object({ label: z.string(), cringe: z.number() })),
 });
 
+// The voice note, written after the roast: one spoken part per line, then the real fixes.
+const VoicedRoastSchema = RoastSchema.extend({
+  script: z.object({ lines: z.array(z.string()), fixes: z.string() }),
+});
+
 const SeriousOutput = z.object({ profile: ProfileSchema, review: ReviewSchema });
 const RoastOutput = z.object({ profile: ProfileSchema, review: ReviewSchema, roast: RoastSchema });
+const VoicedRoastOutput = z.object({ profile: ProfileSchema, review: ReviewSchema, roast: VoicedRoastSchema });
 
 // ---------- Prompts ----------
 
@@ -99,7 +105,10 @@ const HEAT_RULES: Record<Heat, string> = {
     'Heat: no chill (18+, the user confirmed). Cold, precise and merciless. Swearing is fine. Go below the belt about their choices, never their body.',
 };
 
-function roastRules(heat: Heat) {
+// The script is read out by a text-to-speech voice in the same heat.
+const VOICE_RULES = `- script: the voice note, written to be read aloud after you have written the roast above. script.lines has exactly one entry per item in lines, in the same order: that joke reworked for the ear, one to three sentences, naming out loud what it is about ("your fifth photo", "your bio") so a listener can follow. The first entry opens the note with the verdict, not a greeting. script.fixes closes the note: the real fixes from each line's wrong, in plain spoken sentences, in the same voice, without a joke landing on any of them. 90–160 words in total. Spoken words only: no emoji, stage directions, brackets, quotation marks around whole sentences, lists or markdown; write numbers as they are said.`;
+
+function roastRules(heat: Heat, voice: boolean) {
   return `## The roast
 
 ${HEAT_RULES[heat]}
@@ -107,7 +116,7 @@ ${HEAT_RULES[heat]}
 - verdict: a two-part line for the share card. setup is a short statement (max 6 words, ends with a full stop), punchline lands the blow (max 6 words). Example: "Not a red flag." / "A beige one."
 - lines: 3–5 jokes in the order you would deliver them, each about one thing the user posted. target is "PHOTO n", "PROMPT n" or "BIO", using the numbers from the profile. quote is the prompt answer exactly as written when the target is a prompt, else null. joke is one or two spoken sentences. wrong is one plain sentence saying what is actually wrong, so the roast still ends on real fixes.
 - receipt: 4–6 line items for the worst offences, most cringe first. label looks like "PHOTO 5 · the fish, held like a firstborn" (max 48 characters). cringe is how much each item adds, 0.5–2.5. The items add up to the profile's Cringe-o-meter out of 10, so the total must match how cringe the profile really is.
-
+${voice ? `${VOICE_RULES}\n` : ''}
 Hard floor, at every heat:
 - Never make protected characteristics the punchline: ethnicity, religion, disability, sexual orientation, gender identity, visible illness.
 - No slurs in any language or spelling.
@@ -146,6 +155,8 @@ export interface ReviewInput {
   app: DatingApp;
   looking: Looking;
   heat: Heat;
+  /** Also write the script for the voice note. */
+  voice: boolean;
 }
 
 export interface ReviewResult {
@@ -162,13 +173,13 @@ export async function reviewScreenshots(images: string[], input: ReviewInput): P
     { type: 'image' as const, source: { type: 'base64' as const, media_type: 'image/jpeg' as const, data } },
   ]);
   content.push({ type: 'text', text: context(input) });
-  const system = roast ? `${READ_AND_SCORE}\n\n${roastRules(input.heat)}` : READ_AND_SCORE;
+  const system = roast ? `${READ_AND_SCORE}\n\n${roastRules(input.heat, input.voice)}` : READ_AND_SCORE;
 
   if (roast) {
     const res = await anthropic().beta.messages.parse({
       ...COMMON,
       system,
-      output_config: { effort: 'medium', format: betaZodOutputFormat(RoastOutput) },
+      output_config: { effort: 'medium', format: betaZodOutputFormat(input.voice ? VoicedRoastOutput : RoastOutput) },
       messages: [{ role: 'user', content }],
     });
     check(res);
@@ -186,11 +197,11 @@ export async function reviewScreenshots(images: string[], input: ReviewInput): P
 
 /** Re-runs only the roast, from what the first review read off the screenshots. */
 export async function roastProfile(profile: ProfileFacts, input: ReviewInput): Promise<RawRoast> {
-  const system = `You roast dating profiles for ${BRAND}. You get the profile as JSON: photos (described, numbered in profile order), bio, prompts and age. Never use the person's name.\n\n${roastRules(input.heat)}`;
+  const system = `You roast dating profiles for ${BRAND}. You get the profile as JSON: photos (described, numbered in profile order), bio, prompts and age. Never use the person's name.\n\n${roastRules(input.heat, input.voice)}`;
   const res = await anthropic().beta.messages.parse({
     ...COMMON,
     system,
-    output_config: { effort: 'medium', format: betaZodOutputFormat(RoastSchema) },
+    output_config: { effort: 'medium', format: betaZodOutputFormat(input.voice ? VoicedRoastSchema : RoastSchema) },
     messages: [{ role: 'user', content: `${context(input)}\n\n${JSON.stringify(profile)}` }],
   });
   check(res);
