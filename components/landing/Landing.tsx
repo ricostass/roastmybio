@@ -113,10 +113,10 @@ export function Landing({ initialMode = 'roast' }: { initialMode?: Mode }) {
               <div className={s.modeLabel}>ROAST</div>
               <div className={s.modeTitle}>Comedy. Then the real fixes.</div>
               <ul className={s.modeList}>
-                <li>Voice note, line by line through your profile</li>
-                <li>Two heat levels: Go easy · No chill (18+)</li>
+                <li>A voice note roasting your whole profile</li>
+                <li>Two roasters: Gen Z · No chill (18+)</li>
                 <li>Verdict and Cringe-o-meter on a shareable card</li>
-                <li>Go easy sticks to what you posted. No chill spares nothing</li>
+                <li>Gen Z is the comment section. No chill is a full meltdown</li>
               </ul>
               <button type="button" className={s.modeButton} onClick={() => setMode('roast')}>
                 Preview roast mode

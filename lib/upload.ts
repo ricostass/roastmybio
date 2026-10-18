@@ -36,11 +36,11 @@ export function parseCheckOptions(get: (key: string) => string | null): CheckOpt
   const mode = get('mode');
   const app = get('app');
   const looking = get('looking');
-  const heat = get('heat') ?? 'easy';
+  const heat = get('heat') ?? 'genz';
   if (mode !== 'serious' && mode !== 'roast') return 'Unknown mode.';
   if (!DATING_APPS.includes(app as DatingApp)) return 'Pick which app.';
   if (!LOOKING_OPTIONS.includes(looking as Looking)) return "Pick what you're looking for.";
-  if (heat !== 'easy' && heat !== 'nochill') return 'Unknown heat level.';
+  if (heat !== 'genz' && heat !== 'nochill') return 'Unknown roaster.';
   const adult = get('adult') === 'true';
   if (mode === 'roast' && heat === 'nochill' && !adult) {
     return 'No chill is 18+ only. Confirm you are 18+ and this is your own profile.';

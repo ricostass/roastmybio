@@ -15,7 +15,7 @@ function Captions({ words, current, card, fonts, size }: {
   fonts: CardFonts;
   size: number;
 }) {
-  const easy = card.heat === 'easy';
+  const genz = card.heat === 'genz';
   const big = size >= 100;
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: big ? 14 : 12, columnGap: big ? 12 : 10 }}>
@@ -26,11 +26,11 @@ function Captions({ words, current, card, fonts, size }: {
             display: 'flex',
             ...type(fonts.display, 800, size, 1),
             letterSpacing: ls(big ? -0.04 : -0.035, size),
-            background: i === current ? C.accent : easy ? C.ink : C.cream,
-            color: i === current ? C.ink : easy ? C.cream : C.ink,
+            background: i === current ? C.accent : genz ? C.ink : C.cream,
+            color: i === current ? C.ink : genz ? C.cream : C.ink,
             padding: big ? '10px 26px 20px' : '8px 20px 16px',
             borderRadius: big ? 18 : 14,
-            opacity: i > current ? (easy ? 0.35 : 0.3) : 1,
+            opacity: i > current ? (genz ? 0.35 : 0.3) : 1,
           }}
         >
           {w}
@@ -41,15 +41,15 @@ function Captions({ words, current, card, fonts, size }: {
 }
 
 export function VoiceNoteCard({ card, fonts }: { card: RoastCard; fonts: CardFonts }) {
-  const easy = card.heat === 'easy';
-  const fg = easy ? C.ink : C.cream;
-  const muted = (a: number) => tint(easy ? 'ink' : 'cream', a);
+  const genz = card.heat === 'genz';
+  const fg = genz ? C.ink : C.cream;
+  const muted = (a: number) => tint(genz ? 'ink' : 'cream', a);
   const { width, height } = FORMAT_SIZE['9:16'];
   const elapsed = card.voice?.elapsedSec ?? 0;
   const duration = card.voice?.durationSec ?? 1;
-  const background = easy ? C.cream : 'radial-gradient(120% 70% at 50% 100%, #2A1B12 0%, #141210 60%)';
+  const background = genz ? C.cream : 'radial-gradient(120% 70% at 50% 100%, #2A1B12 0%, #141210 60%)';
   const frame = { background, color: fg, padding: '88px 80px', fontFamily: fonts.body };
-  const rest = easy ? tint('ink', 0.22) : tint('cream', 0.28);
+  const rest = genz ? tint('ink', 0.22) : tint('cream', 0.28);
 
   const header = (label: string) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -91,7 +91,7 @@ export function VoiceNoteCard({ card, fonts }: { card: RoastCard; fonts: CardFon
     <Frame width={width} height={height} style={frame}>
       {header(`VOICE NOTE · ${clock(duration)}`)}
       <div style={{ display: 'flex', flexDirection: 'column', marginTop: 160 }}>
-        <Waveform heights={waveform(40, easy ? 1 : 2)} played={elapsed / duration} height={260} gap={8} radius={8} rest={rest} />
+        <Waveform heights={waveform(40, genz ? 1 : 2)} played={elapsed / duration} height={260} gap={8} radius={8} rest={rest} />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 30, ...type(fonts.mono, 500, 28), color: muted(0.55) }}>
         <span style={{ color: fg }}>{clock(elapsed)}</span>
@@ -104,7 +104,7 @@ export function VoiceNoteCard({ card, fonts }: { card: RoastCard; fonts: CardFon
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', ...type(fonts.mono, 500, 26), letterSpacing: ls(0.08, 26), color: muted(0.6) }}>CRINGE-O-METER</div>
           <div style={{ display: 'flex', alignItems: 'baseline', marginTop: 8 }}>
-            <span style={{ ...type(fonts.mono, 700, 96, 1), letterSpacing: ls(-0.05, 96), color: easy ? undefined : C.accent }}>
+            <span style={{ ...type(fonts.mono, 700, 96, 1), letterSpacing: ls(-0.05, 96), color: genz ? undefined : C.accent }}>
               {score(card.cringe ?? 0)}
             </span>
             <span style={{ ...type(fonts.mono, 700, 40, 1), color: muted(0.5) }}>/10</span>

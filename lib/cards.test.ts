@@ -5,7 +5,7 @@ import { buildCard, cardImageUrl, currentCaptionWord, splitLastSentence } from '
 import { meterBlocks } from './format';
 
 const roast = sampleAnalysis('t', { mode: 'roast', app: 'Hinge', looking: 'A relationship', heat: 'nochill', voice: true });
-const serious = sampleAnalysis('s', { mode: 'serious', app: 'Hinge', looking: 'A relationship', heat: 'easy', voice: false });
+const serious = sampleAnalysis('s', { mode: 'serious', app: 'Hinge', looking: 'A relationship', heat: 'genz', voice: false });
 
 describe('buildCard', () => {
   it('builds a verdict card from the roast', () => {
@@ -14,10 +14,10 @@ describe('buildCard', () => {
     expect(card?.verdict).toEqual({ setup: 'Not a red flag.', punchline: 'A beige one.' });
   });
 
-  it('freezes line cards mid-way through that line in the voice note', () => {
+  it('freezes line cards at the voice note\'s still frame', () => {
     const card = buildCard(roast, { kind: 'line', line: 1, format: '9:16' });
     expect(card?.line?.target).toBe('PROMPT 2');
-    expect(card?.voice?.elapsedSec).toBe((22 + 36) / 2);
+    expect(card?.voice).toEqual({ elapsedSec: 31, durationSec: 52 });
   });
 
   it('returns null without a roast or for a missing line', () => {

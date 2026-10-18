@@ -1,5 +1,5 @@
 export type Mode = 'serious' | 'roast';
-export type Heat = 'easy' | 'nochill';
+export type Heat = 'genz' | 'nochill';
 export type DatingApp = 'Hinge' | 'Bumble' | 'Tinder' | 'Other';
 export type Looking = 'A relationship' | 'Something casual' | 'Not sure yet';
 
@@ -65,14 +65,6 @@ export interface ReceiptItem {
   cringe: number;
 }
 
-export interface VoiceSegment {
-  /** Shown as "Now roasting: <label>". */
-  label: string;
-  startSec: number;
-  /** What the roaster says in this part of the note, when there's a spoken script. */
-  text?: string;
-}
-
 export interface Roast {
   heat: Heat;
   verdict: { setup: string; punchline: string };
@@ -85,7 +77,8 @@ export interface Roast {
     /** Point in the note used for still frames of the card. */
     frameSec: number;
     audioUrl?: string;
-    segments: VoiceSegment[];
+    /** The words read aloud, when there's a spoken script: one rant, no fixes. */
+    script?: string;
   };
 }
 

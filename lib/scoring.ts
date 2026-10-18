@@ -88,21 +88,8 @@ export interface RawRoast {
   verdict: { setup: string; punchline: string };
   lines: { target: string; quote: string | null; joke: string; wrong: string }[];
   receipt: ReceiptItem[];
-  /** The voice note, its own roast to be read aloud: its parts, then (going easy) the real fixes. */
-  script?: { parts: { target: string; text: string }[]; fixes?: string };
-}
-
-/** "PHOTO 5" → "Photo 5", for "Now roasting: Photo 5". */
-export const FIXES_LABEL = 'The real fixes';
-
-/** Whether the voice note ends on the real fixes. No chill ends on the roast. */
-export function spokenFixes(heat: Heat) {
-  return heat !== 'nochill';
-}
-
-function segmentLabel(target: string) {
-  const t = target.trim().toLowerCase();
-  return t.charAt(0).toUpperCase() + t.slice(1);
+  /** The voice note: its own roast, read aloud as one piece. */
+  script?: string;
 }
 
 function wordCount(s: string) {
@@ -119,31 +106,14 @@ export function toRoast(heat: Heat, raw: RawRoast): Roast {
   const receipt = raw.receipt.slice(0, 6).map((r) => ({ label: r.label, cringe: round1(clamp(r.cringe, 0, MAX_ITEM_CRINGE)) }));
   const cringe = clampScore(receipt.reduce((sum, r) => sum + r.cringe, 0));
 
-  // With a script, the note is its own roast and each part has the words that
-  // get read aloud; without one, or if it came back empty, it follows the
-  // roast's lines. Going easy, it ends on the real fixes.
-  const script = raw.script;
-  const fixes = lines.map((l) => l.wrong).join(' ');
-  const spoken = (script?.parts ?? []).filter((p) => p.text.trim());
-  const roasted = spoken.length
-    ? spoken.map((p) => ({ label: segmentLabel(p.target), text: p.text.trim() }))
-    : lines.map((l) => ({ label: segmentLabel(l.target), text: l.joke }));
-  const ending = spokenFixes(heat) ? [{ label: FIXES_LABEL, text: script?.fixes?.trim() || fixes }] : [];
-  const parts = [...roasted, ...ending].map((p) => ({
-    label: p.label,
-    text: script ? p.text : undefined,
-    words: wordCount(p.text),
-  }));
+  // The script is the voice note's own roast, read as one piece. Without one,
+  // the note's length follows the lines.
+  const script = raw.script?.trim() || undefined;
+  const spoken = script ? [script] : lines.map((l) => l.joke);
 
   // Until there's audio to time it from, assume roughly 2.6 spoken words a second.
-  const words = Math.max(1, parts.reduce((n, p) => n + p.words, 0));
+  const words = spoken.reduce((n, text) => n + wordCount(text), 0);
   const durationSec = Math.round(clamp(words / 2.6 + 4, 20, 90));
-  let said = 0;
-  const segments = parts.map((p) => {
-    const startSec = Math.round((durationSec * said) / words);
-    said += p.words;
-    return { label: p.label, startSec, ...(p.text ? { text: p.text } : {}) };
-  });
 
   return {
     heat,
@@ -151,6 +121,6 @@ export function toRoast(heat: Heat, raw: RawRoast): Roast {
     cringe,
     lines,
     receipt,
-    voice: { durationSec, frameSec: Math.round(durationSec * 0.3), segments },
+    voice: { durationSec, frameSec: Math.round(durationSec * 0.3), ...(script ? { script } : {}) },
   };
 }

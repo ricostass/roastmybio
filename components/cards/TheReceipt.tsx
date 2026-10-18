@@ -39,7 +39,7 @@ function Row({ label, value, fonts }: { label: string; value: string; fonts: Car
 }
 
 export function TheReceipt({ card, fonts }: { card: RoastCard; fonts: CardFonts }) {
-  const easy = card.heat === 'easy';
+  const genz = card.heat === 'genz';
   const { width, height } = FORMAT_SIZE['9:16'];
   const paperWidth = width - 220;
   const items = card.receipt ?? [];
@@ -49,7 +49,7 @@ export function TheReceipt({ card, fonts }: { card: RoastCard; fonts: CardFonts 
     <Frame
       width={width}
       height={height}
-      style={{ background: easy ? C.paperGround : C.ink, color: C.ink, padding: '70px 110px 0', fontFamily: fonts.mono }}
+      style={{ background: genz ? C.paperGround : C.ink, color: C.ink, padding: '70px 110px 0', fontFamily: fonts.mono }}
     >
       <div
         style={{
@@ -59,7 +59,7 @@ export function TheReceipt({ card, fonts }: { card: RoastCard; fonts: CardFonts 
           marginBottom: 40,
           ...type(fonts.mono, 500, 24),
           letterSpacing: ls(0.04, 24),
-          color: easy ? tint('ink', 0.6) : tint('cream', 0.7),
+          color: genz ? tint('ink', 0.6) : tint('cream', 0.7),
         }}
       >
         <span>{BRAND_HOST}</span>
@@ -82,7 +82,7 @@ export function TheReceipt({ card, fonts }: { card: RoastCard; fonts: CardFonts 
             <div style={{ display: 'flex' }}>ROAST RECEIPT</div>
             <div style={{ display: 'flex' }}>
               <span>HEAT:&nbsp;</span>
-              <span style={easy ? undefined : { color: C.accent, fontWeight: 700 }}>{easy ? 'GO EASY' : 'NO CHILL · 18+'}</span>
+              <span style={genz ? undefined : { color: C.accent, fontWeight: 700 }}>{genz ? 'GEN Z' : 'NO CHILL · 18+'}</span>
               <span>{`\u00a0· ${card.meta.photos} PHOTOS · ${card.meta.prompts} PROMPTS`}</span>
             </div>
           </div>
@@ -117,7 +117,7 @@ export function TheReceipt({ card, fonts }: { card: RoastCard; fonts: CardFonts 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <span style={{ ...type(fonts.mono, 700, 36), letterSpacing: ls(0.06, 36) }}>TOTAL CRINGE</span>
                 <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                  <span style={{ ...type(fonts.mono, 700, 120, 1), letterSpacing: ls(-0.05, 120), color: easy ? undefined : C.accent }}>
+                  <span style={{ ...type(fonts.mono, 700, 120, 1), letterSpacing: ls(-0.05, 120), color: genz ? undefined : C.accent }}>
                     {score(card.cringe ?? 0)}
                   </span>
                   <span style={{ ...type(fonts.mono, 700, 44, 1), color: tint('ink', 0.5) }}>/10</span>
@@ -154,7 +154,7 @@ export function TheReceipt({ card, fonts }: { card: RoastCard; fonts: CardFonts 
         <Zigzag width={paperWidth} />
       </div>
 
-      {!easy && (
+      {!genz && (
         <div
           style={{
             display: 'flex',

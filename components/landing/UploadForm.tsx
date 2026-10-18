@@ -7,7 +7,7 @@ import { ACCEPTED_TYPES, MAX_SCREENSHOTS, validateScreenshots } from '@/lib/uplo
 import s from './landing.module.css';
 
 const HEAT_OPTIONS: { value: Heat; label: string; sub: string }[] = [
-  { value: 'easy', label: 'Go easy on me', sub: 'Teasing. Safe for the group chat.' },
+  { value: 'genz', label: 'Gen Z', sub: 'The comment section. Chronically online.' },
   { value: 'nochill', label: 'No chill · 18+', sub: 'Swearing, below the belt.' },
 ];
 
@@ -65,7 +65,7 @@ export function UploadForm({ mode }: { mode: Mode }) {
   const [dragging, setDragging] = useState(false);
   const [looking, setLooking] = useState<Looking>('A relationship');
   const [app, setApp] = useState<DatingApp>('Hinge');
-  const [heat, setHeat] = useState<Heat>('easy');
+  const [heat, setHeat] = useState<Heat>('genz');
   const [voice, setVoice] = useState(true);
   const [adult, setAdult] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,7 +117,7 @@ export function UploadForm({ mode }: { mode: Mode }) {
     body.set('mode', mode);
     body.set('looking', looking);
     body.set('app', app);
-    body.set('heat', roast ? heat : 'easy');
+    body.set('heat', roast ? heat : 'genz');
     body.set('voice', String(roast && voice));
     body.set('adult', String(needsAdult && adult));
     try {

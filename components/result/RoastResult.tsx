@@ -18,13 +18,12 @@ import s from './result.module.css';
 const VIDEO_READY = false;
 
 function VoiceNote({ roast }: { roast: Roast }) {
-  const { durationSec, audioUrl, segments } = roast.voice;
+  const { durationSec, audioUrl } = roast.voice;
   const { playing, elapsed, progress, toggle } = usePlayback(durationSec, audioUrl);
-  const now = [...segments].reverse().find((seg) => elapsed >= seg.startSec) ?? segments[0];
   return (
     <section className={s.voice} aria-label="Voice note">
       <div className={s.voiceHead}>
-        <span>VOICE NOTE · {roast.heat === 'easy' ? 'GO EASY' : 'NO CHILL'}</span>
+        <span>VOICE NOTE · {roast.heat === 'genz' ? 'GEN Z' : 'NO CHILL'}</span>
         <span>
           {clock(elapsed)} / {clock(durationSec)}
         </span>
@@ -34,9 +33,6 @@ function VoiceNote({ roast }: { roast: Roast }) {
           {playing ? '❚❚' : '▶'}
         </button>
         <Waveform progress={progress} height={52} />
-      </div>
-      <div className={s.nowRoasting} aria-live="polite">
-        Now roasting: <strong>{now.label}</strong>
       </div>
     </section>
   );
@@ -64,7 +60,7 @@ export function RoastResult({ analysis }: { analysis: Analysis }) {
   const router = useRouter();
   const roast = analysis.roast!;
   const [status, setStatus] = useState<string | null>(null);
-  const [softening, setSoftening] = useState(false);
+  const [switching, setSwitching] = useState(false);
 
   async function share(reqs: CardRequest[], withVoice = false) {
     setStatus('Making your cards…');
@@ -90,12 +86,12 @@ export function RoastResult({ analysis }: { analysis: Analysis }) {
     }
   }
 
-  async function goEasy() {
-    setSoftening(true);
-    const res = await fetch(`/api/roast/${analysis.id}/soften`, { method: 'POST' });
+  async function genZTake() {
+    setSwitching(true);
+    const res = await fetch(`/api/roast/${analysis.id}/genz`, { method: 'POST' });
     const data = (await res.json()) as { id?: string };
     if (data.id) router.push(`/result/${data.id}`);
-    else setSoftening(false);
+    else setSwitching(false);
   }
 
   const verdict = `${roast.verdict.setup} ${roast.verdict.punchline}`;
@@ -170,8 +166,8 @@ export function RoastResult({ analysis }: { analysis: Analysis }) {
 
         <div className={s.footer}>
           {roast.heat === 'nochill' && (
-            <button type="button" className={s.outline} onClick={goEasy} disabled={softening}>
-              {softening ? 'Turning it down…' : 'Too much? Go easy on me'}
+            <button type="button" className={s.outline} onClick={genZTake} disabled={switching}>
+              {switching ? 'Opening the comment section…' : 'Get the Gen Z take'}
             </button>
           )}
           <Link href={`/result/${analysis.id}?view=serious`} className={s.footLink}>
